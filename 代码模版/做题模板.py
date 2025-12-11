@@ -26,7 +26,9 @@ input = lambda: sys.stdin.readline().strip()
 si = lambda: input()
 ii = lambda: int(input())
 many_ii = lambda: map(int, input().split())
-li = lambda: list(many_ii())
+many_si = lambda: input().split()
+lii = lambda: list(many_ii())
+lsi = lambda: list(many_si())
 MOD = 1_000_000_007
 
 def solve():
