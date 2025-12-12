@@ -1,4 +1,3 @@
-import sys
 from math import inf
 from math import gcd
 from math import lcm
@@ -22,7 +21,6 @@ from collections import deque
 import datetime
 import re
 from typing import List, Tuple
-input = lambda: sys.stdin.readline().strip()
 si = lambda: input()
 ii = lambda: int(input())
 many_ii = lambda: map(int, input().split())
