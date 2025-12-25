@@ -1,4 +1,5 @@
 # https://codeforces.com/contest/2172/problem/E
+# 1200
 
 import sys
 input = lambda: sys.stdin.readline().strip()

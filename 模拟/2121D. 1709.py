@@ -1,4 +1,5 @@
 # https://codeforces.com/problemset/problem/2121/D
+# 800
 
 from math import inf
 from math import gcd

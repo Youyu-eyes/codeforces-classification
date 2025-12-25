@@ -1,4 +1,5 @@
 # https://codeforces.com/contest/2171/problem/F
+# 1600 感觉不止，可能有 1700
 
 from math import inf
 from math import gcd

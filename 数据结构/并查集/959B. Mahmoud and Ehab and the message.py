@@ -1,4 +1,5 @@
 # https://codeforces.com/contest/959/problem/B
+# 1200
 
 import sys
 from math import inf

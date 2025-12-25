@@ -1,4 +1,6 @@
 # https://codeforces.com/problemset/problem/2033/D
+# 贪心解法
+# 1450
 
 from collections import defaultdict
 

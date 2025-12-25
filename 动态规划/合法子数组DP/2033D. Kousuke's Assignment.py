@@ -1,4 +1,6 @@
 # https://codeforces.com/problemset/problem/2033/D
+# DP 解法
+# 1300
 
 from collections import defaultdict
 from math import inf

@@ -1,4 +1,6 @@
 # https://codeforces.com/contest/1919/problem/C
+# Lazy 线段树优化DP
+# 1800 另有贪心做法
 
 from math import inf
 from math import gcd
@@ -33,8 +35,9 @@ lsi = lambda: list(many_si())
 MOD = 1_000_000_007
 
 
-# Lazy线段树优化DP
+# Lazy 线段树优化DP
 # 这版过不了，应该是python的运行效率和这个Lazy线段树的板子问题，精简板子后 c++ 能过
+# 能过的为贪心算法，详见贪心题单
 
 
 class Node:

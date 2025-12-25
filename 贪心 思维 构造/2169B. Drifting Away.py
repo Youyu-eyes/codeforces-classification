@@ -1,4 +1,6 @@
 # https://codeforces.com/contest/2169/problem/B
+# 1100 正常写法
+# 1250 正则式匹配
 
 import sys
 from math import inf

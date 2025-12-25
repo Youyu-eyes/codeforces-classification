@@ -1,7 +1,6 @@
-# https://codeforces.com/contest/2145/problem/C
-# 1300
+# https://codeforces.com/contest/1526/problem/B
+# 1400
 
-import sys
 from math import inf
 from math import gcd
 from math import lcm
@@ -24,34 +23,26 @@ from collections import Counter
 from collections import deque
 import datetime
 import re
+from copy import deepcopy
 from typing import List, Tuple
-input = lambda: sys.stdin.readline().strip()
 si = lambda: input()
 ii = lambda: int(input())
 many_ii = lambda: map(int, input().split())
-li = lambda: list(many_ii())
+many_si = lambda: input().split()
+lii = lambda: list(many_ii())
+lsi = lambda: list(many_si())
 MOD = 1_000_000_007
 
-def solve(s):
-    d = s.count('a') - s.count('b')
-    if d == 0:
-        return 0
-    cnt = defaultdict(int)
-    cnt[d - 1] = -1
-    pre = 0
-    ans = inf
-    for i, c in enumerate(s):
-        if c == 'b':
-            pre += 1
-        x = i - 2 * pre
-        if x in cnt:
-            ans = min(ans, i - cnt[x])
-        cnt[d + x] = i
-    return ans if ans < n else -1
-
+def solve(nums):
+    if nums % 11 == 0 or nums % 111 == 0:
+        return True
+    n = nums // 111
+    for i in range(n + 1):
+        if (nums - i * 111) % 11 == 0:
+            return True
+    return False
 
 T = ii()
 for _ in range(T):
     n = ii()
-    s = si()
-    print(solve(s))
+    print('YES' if solve(n) else 'NO')
