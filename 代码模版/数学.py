@@ -44,3 +44,10 @@ divisors = [[] for _ in range(MX)]
 for i in range(1, MX):
     for j in range(i, MX, i):  # 枚举 i 的倍数 j
         divisors[j].append(i)  # i 是 j 的因子
+
+# 离散化
+def discretize(arr):
+    sorted_unique = sorted(set(arr))
+    value_to_index = {value: idx for idx, value in enumerate(sorted_unique)}
+    discretized = [value_to_index[x] for x in arr]
+    return discretized
