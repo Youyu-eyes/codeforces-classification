@@ -38,16 +38,15 @@ MOD = 1_000_000_007
 
 def solve(n, k, lq, lr):
     p1 = 0
-    p2 = n - 1
+    p2 = n  # p2 用开区间的好处是，由于 bisect_left 函数的右端点是开区间，开区间可以防止 p2 反复横跳
     ans = 0
     lq.sort()
     lr.sort()
     while p1 < n and p2 >= 0:
         q = lq[p1]
-        p2 = bisect_left(lr, (k + 1) // (q + 1) + 1, 0, p2 + 1) - 1
+        p2 = bisect_left(lr, (k + 1) // (q + 1) + 1, 0, p2) - 1
         if p2 >= 0:
             ans += 1
-            p2 -= 1
         p1 += 1
     return ans
 
