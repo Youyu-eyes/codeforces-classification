@@ -1,8 +1,7 @@
 # https://codeforces.com/contest/2091/problem/E
 # 1300
 # 埃氏筛
-# 10^7 数据 Python 埃氏筛跑不动，python 最大跑到 10^6
-# 必须用 C++，具体代码看题解
+# 10^7，python 最大跑到 10^6， 交PyPy能过
 
 import sys
 input = lambda: sys.stdin.readline().split()

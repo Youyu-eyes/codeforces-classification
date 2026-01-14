@@ -1,6 +1,6 @@
 # https://codeforces.com/contest/2112/problem/C
 # 1300
-# 二分方法 python 过不了， c++ 能过
+# 二分方法 python3 过不了，交 PyPy3
 # 复杂度 O(n^2logn)
 
 from bisect import bisect_left
