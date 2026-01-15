@@ -30,20 +30,19 @@
 # MOD = 1_000_000_007
 
 import sys
-input = lambda: sys.stdin.readline().split()
-si = lambda: input()[0]
-ii = lambda: int(si())
-lii = lambda: list(map(int, input()))
-lsi = lambda: input()
+input = lambda: sys.stdin.readline().rstrip('\r\n')
+print = lambda *args, end='\n', sep=' ': sys.stdout.write(
+    sep.join(map(str, args)) + end
+)
 
-def solve():
-    T = ii()
-    out = []
-    for _ in range(T):
-        ans = 0
-    
-        out.append(str(ans))
-    sys.stdout.buffer.write('\n'.join(out).encode())
+def II():
+    return int(input())
 
-if __name__ == "__main__":
-    solve()
+def MII(b = 0):
+    return map(lambda x: int(x) - b, input().split())
+
+def LII(b = 0):
+    return list(MII())
+
+for _ in range(II()):
+    print()

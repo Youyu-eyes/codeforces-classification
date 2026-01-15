@@ -1,33 +1,31 @@
 # https://codeforces.com/contest/2112/problem/C
 # 1300
-# 二分方法 python3 过不了，交 PyPy3
 # 复杂度 O(n^2logn)
 
 from bisect import bisect_left
 
 import sys
-input = lambda: sys.stdin.readline().split()
-si = lambda: input()[0]
-ii = lambda: int(si())
-lii = lambda: list(map(int, input()))
-lsi = lambda: input()
+input = lambda: sys.stdin.readline().rstrip('\r\n')
+print = lambda *args, end='\n', sep=' ': sys.stdout.write(
+    sep.join(map(str, args)) + end
+)
 
-def solve():
-    T = ii()
-    out = []
-    for _ in range(T):
-        n = ii()
-        nums = lii()
-        mx = nums[-1]
-        ans = 0
-        max_mx_2i_list = [max(mx, 2 * nums[i]) for i in range(n)]
-        for i in range(2, n):
-            for j in range(1, i):
-                k = bisect_left(nums, max_mx_2i_list[i] - nums[i] - nums[j] + 1, 0, j)
-                ans += j - k
+def II():
+    return int(input())
 
-        out.append(str(ans))
-    sys.stdout.buffer.write('\n'.join(out).encode())
+def MII(b = 0):
+    return map(lambda x: int(x) - b, input().split())
 
-if __name__ == "__main__":
-    solve()
+def LII(b = 0):
+    return list(MII())
+
+for _ in range(II()):
+    n = II()
+    nums = LII()
+    mx = nums[-1]
+    ans = 0
+    for i in range(2, n):
+        for j in range(1, i):
+            k = bisect_left(nums, max(mx, 2 * nums[i]) - nums[i] - nums[j] + 1, 0, j)
+            ans += j - k
+    print(ans)
