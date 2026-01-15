@@ -37,7 +37,7 @@ def II():
 def MII(b = 0):
     return map(lambda x: int(x) - b, input().split())
 
-def LII(b = 0):
+def LII():
     return list(MII())
 
 for _ in range(II()):
