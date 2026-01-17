@@ -1,7 +1,8 @@
 # https://codeforces.com/contest/1948/problem/C
 # 1300
-# 递推 DFS
+# 图的遍历，递推 DFS
 # 同样，递归会被卡
+# 广搜版本见 BFS
 
 import sys
 input = lambda: sys.stdin.readline().rstrip('\r\n')
