@@ -33,6 +33,7 @@ lii = lambda: list(many_ii())
 lsi = lambda: list(many_si())
 MOD = 1_000_000_007
 
+# 另一解法见动态规划：线段树优化DP
 # 贪心做法：只会出现 3 种情况，令 x <= y
 # 1. a <= x，放在 x 后面最优，不会增加
 # 2. a > y，放在 x 后面最优，会增加
