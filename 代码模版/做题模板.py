@@ -41,8 +41,8 @@ def II():
 def MII(b = 0):
     return map(lambda x: int(x) - b, input().split())
 
-def LII():
-    return list(MII())
+def LII(b = 0):
+    return list(MII(b))
 
 for _ in range(II()):
     print()
