@@ -51,3 +51,26 @@ def discretize(arr):
     value_to_index = {value: idx for idx, value in enumerate(sorted_unique)}
     discretized = [value_to_index[x] for x in arr]
     return discretized
+
+# 向量
+class Vec:
+    __slots__ = 'x', 'y'
+
+    def __init__(self, x: int, y: int):
+        self.x = x
+        self.y = y
+
+    def __sub__(self, b: "Vec") -> "Vec":
+        return Vec(self.x - b.x, self.y - b.y)
+
+    def det(self, b: "Vec") -> int:
+        return self.x * b.y - self.y * b.x
+
+    def dot(self, b: "Vec") -> int:
+        return self.x * b.x + self.y * b.y
+    
+# 初始化及用法
+# x = 1; y = 1
+# a = Vec(x, y)
+# b = Vec(x, y)
+# a.dot(b)
