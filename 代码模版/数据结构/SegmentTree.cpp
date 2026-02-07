@@ -96,91 +96,150 @@ public:
 };
 
 // 李超线段树
-class LiChaoTree {
-private:
-    ll x_left, x_right;
-    LiChaoTree* left = nullptr;
-    LiChaoTree* right = nullptr;
-    pair<ll, ll> line; // (斜率, 截距)
+const double eps = 1e-10;
+struct Line {
+    double k, b;
+    int id;
     
-    ll f(pair<ll, ll>& line, ll x) {
-        return line.first * x + line.second;
+    Line() : k(0), b(0), id(0) {}
+    Line(double k, double b, int id) : k(k), b(b), id(id) {}
+    
+    // 计算在x处的y值
+    double calc(int x) const {
+        return k * x + b;
+    }
+    
+    // 通过两点创建直线
+    void set_by_points(int x0, int y0, int x1, int y1, int id_val) {
+        this->id = id_val;
+        if (x0 == x1) {
+            k = 0;
+            b = max(y1, y0);
+            return;
+        }
+        k = 1.0 * (y1 - y0) / (x1 - x0);
+        b = 1.0 * y0 - k * x0;
+    }
+};
+
+class LiChaoSegmentTree {
+private:
+    struct Node {
+        int line_id;  // 当前节点保存的线段id，0表示无线段
+        Node() : line_id(0) {}
+    };
+    
+    int n;  // x坐标的范围 [0, n]
+    vector<Node> tree;
+    vector<Line> lines;  // 存储所有线段，lines[0]为空线段
+    
+    // 比较两个结果，优先返回y值大的，y值相同时返回id小的
+    pair<double, int> better(const pair<double, int>& a, const pair<double, int>& b) const {
+        if (a.first - b.first > eps) return a;
+        if (b.first - a.first > eps) return b;
+        return a.second < b.second ? a : b;
+    }
+    
+    // 递归更新线段
+    void update(int node, int l, int r, int ql, int qr, int line_id) {
+        if (r < ql || l > qr) return;
+        
+        int mid = (l + r) >> 1;
+        
+        if (ql <= l && r <= qr) {
+            if (!tree[node].line_id) {
+                tree[node].line_id = line_id;
+                return;
+            }
+            
+            int cur_id = tree[node].line_id;
+            Line& cur = lines[cur_id];
+            Line& new_line = lines[line_id];
+            
+            // 比较中点处的值
+            bool better_at_mid = new_line.calc(mid) - cur.calc(mid) > eps;
+            
+            if (better_at_mid) {
+                swap(tree[node].line_id, line_id);
+                swap(cur_id, tree[node].line_id);
+            }
+            
+            if (l == r) return;
+            
+            bool better_at_left = new_line.calc(l) - cur.calc(l) > eps ||
+                                  (fabs(new_line.calc(l) - cur.calc(l)) <= eps && line_id < cur_id);
+            bool better_at_right = new_line.calc(r) - cur.calc(r) > eps ||
+                                   (fabs(new_line.calc(r) - cur.calc(r)) <= eps && line_id < cur_id);
+            
+            if (better_at_left) {
+                update(node << 1, l, mid, ql, qr, line_id);
+            }
+            if (better_at_right) {
+                update(node << 1 | 1, mid + 1, r, ql, qr, line_id);
+            }
+            return;
+        }
+        
+        update(node << 1, l, mid, ql, qr, line_id);
+        update(node << 1 | 1, mid + 1, r, ql, qr, line_id);
+    }
+    
+    // 递归查询
+    pair<double, int> query(int node, int l, int r, int x) const {
+        if (l > x || r < x) return {0, 0};
+        
+        pair<double, int> res = {0, 0};
+        if (tree[node].line_id) {
+            const Line& line = lines[tree[node].line_id];
+            res = {line.calc(x), tree[node].line_id};
+        }
+        
+        if (l == r) return res;
+        
+        int mid = (l + r) >> 1;
+        if (x <= mid) {
+            return better(res, query(node << 1, l, mid, x));
+        } else {
+            return better(res, query(node << 1 | 1, mid + 1, r, x));
+        }
     }
     
 public:
-    LiChaoTree(ll l, ll r) : x_left(l), x_right(r) {
-        line = {0, INF};
+    // 构造函数，n为x坐标的最大值（范围是[0, n]）
+    LiChaoSegmentTree(int range) : n(range) {
+        // 分配线段树空间，通常4倍足够
+        tree.resize(4 * (n + 1));
+        lines.emplace_back();  // 第0条是空线段
     }
     
-    void add_line(pair<ll, ll> new_line, ll l, ll r) {
-        ll mid = (l + r) / 2;
-        
-        bool left_new_better = f(new_line, l) < f(line, l);
-        bool mid_new_better = f(new_line, mid) < f(line, mid);
-        
-        if (mid_new_better) {
-            swap(line, new_line);
-        }
-        
-        if (r - l == 1) {
-            return;
-        }
-        
-        if (left_new_better != mid_new_better) {
-            if (!left) {
-                left = new LiChaoTree(l, mid);
-            }
-            left->add_line(new_line, l, mid);
-        } else {
-            if (!right) {
-                right = new LiChaoTree(mid, r);
-            }
-            right->add_line(new_line, mid, r);
-        }
+    // 插入一条线段，从x1到x2
+    void insert(int x1, int y1, int x2, int y2) {
+        int line_id = lines.size();
+        lines.emplace_back();
+        lines.back().set_by_points(x1, y1, x2, y2, line_id);
+        update(1, 0, n, min(x1, x2), max(x1, x2), line_id);
     }
     
-    void add_line_range(pair<ll, ll> new_line, ll seg_l, ll seg_r, ll l, ll r) {
-        if (seg_r <= l || r <= seg_l) {
-            return;
-        }
-        if (seg_l <= l && r <= seg_r) {
-            add_line(new_line, l, r);
-            return;
-        }
-        
-        ll mid = (l + r) / 2;
-        if (!left) {
-            left = new LiChaoTree(l, mid);
-        }
-        left->add_line_range(new_line, seg_l, seg_r, l, mid);
-        
-        if (!right) {
-            right = new LiChaoTree(mid, r);
-        }
-        right->add_line_range(new_line, seg_l, seg_r, mid, r);
+    // 插入一条线段，指定线段对象和区间
+    void insert_segment(int l, int r, const Line& line) {
+        int line_id = lines.size();
+        lines.push_back(line);
+        lines.back().id = line_id;
+        update(1, 0, n, l, r, line_id);
     }
     
-    ll query(ll x, ll l, ll r) {
-        ll res = f(line, x);
-        if (r - l == 1) {
-            return res;
-        }
-        
-        ll mid = (l + r) / 2;
-        if (x < mid) {
-            if (left) {
-                res = min(res, left->query(x, l, mid));
-            }
-        } else {
-            if (right) {
-                res = min(res, right->query(x, mid, r));
-            }
-        }
-        return res;
+    // 在x处查询
+    pair<double, int> query(int x) const {
+        return query(1, 0, n, x);
     }
     
-    ~LiChaoTree() {
-        delete left;
-        delete right;
+    // 获取线段数量（包括第0条空线段）
+    int get_line_count() const {
+        return lines.size();
+    }
+    
+    // 获取指定id的线段
+    const Line& get_line(int id) const {
+        return lines[id];
     }
 };
