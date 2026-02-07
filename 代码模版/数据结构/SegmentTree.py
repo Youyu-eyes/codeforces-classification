@@ -167,7 +167,98 @@ class LazySegmentTree:
         return self._query(1, 0, self._n - 1, ql, qr)
 
 
-# 李超线段树
+# 李超线段树 - max_LichaoSegmentTree
+eps = 1e-10
+
+class Line:
+    def __init__(self, k=0, b=-float('inf'), idx=0):
+        self.k = k
+        self.b = b
+        self.idx = idx
+    
+    def calc(self, x):
+        return self.k * x + self.b
+
+class LiChaoSegmentTree:
+    def __init__(self, n):
+        self.n = n
+        self.tree = [Line() for _ in range(4 * (n + 1))]
+    
+    def _better(self, a, b, x):
+        if a.idx == 0:
+            return b
+        if b.idx == 0:
+            return a
+        
+        va = a.calc(x)
+        vb = b.calc(x)
+        
+        if va - vb > eps:
+            return a
+        if vb - va > eps:
+            return b
+        return a if a.idx < b.idx else b
+    
+    def _update(self, node, l, r, new_line):
+        if l > r:
+            return
+        
+        old_line = self.tree[node]
+        mid = (l + r) // 2
+        
+        better_at_mid = new_line.calc(mid) > old_line.calc(mid) + eps
+        
+        if better_at_mid:
+            self.tree[node], new_line = new_line, old_line
+        
+        if l == r:
+            return
+        
+        better_at_left = new_line.calc(l) > old_line.calc(l) + eps
+        better_at_right = new_line.calc(r) > old_line.calc(r) + eps
+        
+        if better_at_left != better_at_mid:
+            self._update(node * 2, l, mid, new_line)
+        elif better_at_right != better_at_mid:
+            self._update(node * 2 + 1, mid + 1, r, new_line)
+    
+    def _insert_line(self, node, l, r, ql, qr, line):
+        if l > qr or r < ql:
+            return
+        
+        if ql <= l and r <= qr:
+            self._update(node, l, r, line)
+            return
+        
+        mid = (l + r) // 2
+        self._insert_line(node * 2, l, mid, ql, qr, line)
+        self._insert_line(node * 2 + 1, mid + 1, r, ql, qr, line)
+    
+    def _query(self, node, l, r, x):
+        if l == r:
+            return self.tree[node]
+        
+        mid = (l + r) // 2
+        res = self.tree[node]
+        
+        if x <= mid:
+            child_res = self._query(node * 2, l, mid, x)
+        else:
+            child_res = self._query(node * 2 + 1, mid + 1, r, x)
+        
+        return self._better(res, child_res, x)
+    
+    def insert(self, l, r, line):
+        self._insert_line(1, 0, self.n, l, r, line)
+    
+    def query(self, x):
+        line = self._query(1, 0, self.n, x)
+        if line.idx == 0:
+            return -float('inf')
+        return line.calc(x)
+    
+
+# 李超线段树 - min_LichaoSegmentTree
 eps = 1e-10
 
 class Line:
