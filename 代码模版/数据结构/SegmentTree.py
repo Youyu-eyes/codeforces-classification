@@ -168,64 +168,91 @@ class LazySegmentTree:
 
 
 # 李超线段树
-class LiChaoTree:
-    def __init__(self, x_left, x_right):
-        self.x_left = x_left
-        self.x_right = x_right
-        self.left = None
-        self.right = None
-        self.line = (0, inf)
+eps = 1e-10
+
+class Line:
+    def __init__(self, k=0, b=inf, idx=0):
+        self.k = k
+        self.b = b
+        self.idx = idx
     
-    def f(self, line, x):
-        return line[0] * x + line[1]
+    def calc(self, x):
+        return self.k * x + self.b
+
+class LiChaoSegmentTree:
+    def __init__(self, n):
+        self.n = n
+        self.tree = [Line() for _ in range(4 * (n + 1))]
     
-    def add_line(self, new_line, l, r):
-        mid = (l + r) // 2
+    def _better(self, a, b, x):
+        if a.idx == 0:
+            return b
+        if b.idx == 0:
+            return a
         
-        left_new_better = self.f(new_line, l) < self.f(self.line, l)
-        mid_new_better = self.f(new_line, mid) < self.f(self.line, mid)
+        va = a.calc(x)
+        vb = b.calc(x)
         
-        if mid_new_better:
-            self.line, new_line = new_line, self.line
-        
-        if r - l == 1:
+        if va - vb < -eps:
+            return a
+        if vb - va < -eps:
+            return b
+        return a if a.idx < b.idx else b
+    
+    def _update(self, node, l, r, new_line):
+        if l > r:
             return
         
-        if left_new_better != mid_new_better:
-            if self.left is None:
-                self.left = LiChaoTree(l, mid)
-            self.left.add_line(new_line, l, mid)
+        old_line = self.tree[node]
+        mid = (l + r) // 2
+        
+        better_at_mid = new_line.calc(mid) < old_line.calc(mid) - eps
+        
+        if better_at_mid:
+            self.tree[node], new_line = new_line, old_line
+        
+        if l == r:
+            return
+        
+        better_at_left = new_line.calc(l) < old_line.calc(l) - eps
+        better_at_right = new_line.calc(r) < old_line.calc(r) - eps
+        
+        if better_at_left != better_at_mid:
+            self._update(node * 2, l, mid, new_line)
+        elif better_at_right != better_at_mid:
+            self._update(node * 2 + 1, mid + 1, r, new_line)
+    
+    def _insert_line(self, node, l, r, ql, qr, line):
+        if l > qr or r < ql:
+            return
+        
+        if ql <= l and r <= qr:
+            self._update(node, l, r, line)
+            return
+        
+        mid = (l + r) // 2
+        self._insert_line(node * 2, l, mid, ql, qr, line)
+        self._insert_line(node * 2 + 1, mid + 1, r, ql, qr, line)
+    
+    def _query(self, node, l, r, x):
+        if l == r:
+            return self.tree[node]
+        
+        mid = (l + r) // 2
+        res = self.tree[node]
+        
+        if x <= mid:
+            child_res = self._query(node * 2, l, mid, x)
         else:
-            if self.right is None:
-                self.right = LiChaoTree(mid, r)
-            self.right.add_line(new_line, mid, r)
+            child_res = self._query(node * 2 + 1, mid + 1, r, x)
+        
+        return self._better(res, child_res, x)
     
-    def add_line_range(self, new_line, seg_l, seg_r, l, r):
-        if seg_r <= l or r <= seg_l:
-            return
-        if seg_l <= l and r <= seg_r:
-            self.add_line(new_line, l, r)
-            return
-        
-        mid = (l + r) // 2
-        if self.left is None:
-            self.left = LiChaoTree(l, mid)
-        self.left.add_line_range(new_line, seg_l, seg_r, l, mid)
-        
-        if self.right is None:
-            self.right = LiChaoTree(mid, r)
-        self.right.add_line_range(new_line, seg_l, seg_r, mid, r)
+    def insert(self, l, r, line):
+        self._insert_line(1, 0, self.n, l, r, line)
     
-    def query(self, x, l, r):
-        res = self.f(self.line, x)
-        if r - l == 1:
-            return res
-        
-        mid = (l + r) // 2
-        if x < mid:
-            if self.left:
-                res = min(res, self.left.query(x, l, mid))
-        else:
-            if self.right:
-                res = min(res, self.right.query(x, mid, r))
-        return res
+    def query(self, x):
+        line = self._query(1, 0, self.n, x)
+        if line.idx == 0:
+            return inf
+        return line.calc(x)
