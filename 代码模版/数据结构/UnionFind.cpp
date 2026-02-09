@@ -12,7 +12,7 @@ public:
     UnionFind(int n) : fa(n), sz(n, 1), cc(n) {
         // 一开始有 n 个集合 {0}, {1}, ..., {n-1}
         // 集合 i 的代表元是自己，大小为 1
-        iota(fa.begin(), fa.end(), 0); // ranges::iota(fa, 0) 为 c++23 内容
+        ranges::iota(fa, 0); // iota(fa.begin(), fa.end(), 0);
     }
 
     // 返回 x 所在集合的代表元
