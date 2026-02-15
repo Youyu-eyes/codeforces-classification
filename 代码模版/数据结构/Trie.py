@@ -88,13 +88,13 @@ class PersistentTrie:
         self.cnt = [0]
         self.roots = [0]
 
-    def _new_node(self):
+    def _new_node(self) -> int:
         self.ch0.append(0)
         self.ch1.append(0)
         self.cnt.append(0)
         return len(self.cnt) - 1
 
-    def insert(self, prev_root, value):
+    def insert(self, prev_root, value) -> None:
         new_root = self._new_node()
         cur_new = new_root
         cur_old = prev_root
@@ -118,9 +118,8 @@ class PersistentTrie:
                 self.cnt[right_new] = self.cnt[old_right] + 1
                 cur_new = right_new
                 cur_old = old_right
-        return new_root
 
-    def query_max_xor(self, root1, root2, value):
+    def query_max_xor(self, root1, root2, value) -> int:
         node1 = root1
         node2 = root2
         res = 0
