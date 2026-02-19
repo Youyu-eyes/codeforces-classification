@@ -33,10 +33,11 @@ for _ in range(II()):
         if l == r:
             return 0
         res = 0
-        if a[i] > 0:
-            res = max(res, dfs(i + 1, r) + a[i])
-        else:
-            res = max(res, dfs(l, i) - a[i])
+        for i in range(l, r):
+            if a[i] > 0:
+                res = max(res, dfs(i + 1, r) + a[i])
+            else:
+                res = max(res, dfs(l, i) - a[i])
         return res
     print(dfs(0, n))
 
