@@ -1,6 +1,7 @@
 // https://codeforces.com/contest/1875/problem/D
-// 1600
-// 凸包优化DP
+// 原题 1600
+// 凸包/斜率优化DP
+// 斜率优化DP 做法大概 1850
 
 // 状态转移方程具体推导见 子序列DP
 
