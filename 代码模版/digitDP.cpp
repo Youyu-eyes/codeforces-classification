@@ -8,6 +8,11 @@ using namespace std;
 long long digitDP(long long low, long long high, int target) {
     string low_s = to_string(low);
     string high_s = to_string(high);
+
+    // 二进制
+    // string low_s; for (int x = low; x; x >>= 1) low_s.push_back('0' + (x & 1)); reverse(low_s.begin(), low_s.end()); if (low == 0) low_s = "0";
+    // string high_s; for (int x = high; x; x >>= 1) high_s.push_back('0' + (x & 1)); reverse(high_s.begin(), high_s.end()); if (high == 0) high_s = "0";
+
     int n = high_s.size();
     int diff_lh = n - low_s.size();
     vector memo(n, vector<long long>(target + 1, -1));
@@ -25,7 +30,7 @@ long long digitDP(long long low, long long high, int target) {
         }
 
         int lo = limit_low && i >= diff_lh ? low_s[i - diff_lh] - '0' : 0;
-        int hi = limit_high ? high_s[i] - '0' : 9;
+        int hi = limit_high ? high_s[i] - '0' : 9;  // 二进制填 1
 
         long long res = 0;
         int d = lo;
