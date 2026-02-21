@@ -3,6 +3,11 @@ from functools import cache
 def digitDP(low: int, high: int, target: int) -> int:
     low_s = list(map(int, str(low)))
     high_s = list(map(int, str(high)))
+
+    # 二进制情况
+    # low_s = list(map(int, bin(low)[2:]))
+    # high_s = list(map(int, bin(high)[2:]))
+
     n = len(high_s)
     diff_lh = n - len(low_s)
 
@@ -14,7 +19,7 @@ def digitDP(low: int, high: int, target: int) -> int:
             return 1 if cnt0 == target else 0
 
         lo = low_s[i - diff_lh] if limit_low and i >= diff_lh else 0
-        hi = high_s[i] if limit_high else 9
+        hi = high_s[i] if limit_high else 9  # 二进制填 1
 
         res = 0
         start = lo
