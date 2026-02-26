@@ -62,7 +62,10 @@ long long digitDP(long long low, long long high, int target) {
 
         for (; d <= hi; d++) {
             // d = 0: cnt += 1; d = 1: cnt += 2; 合并就是 cnt += d + 1
-            res += dfs(i + 1, cnt + d + 1, limit_low && d == lo, limit_high && d == hi);
+            res += dfs(i + 1, 
+                       cnt + d + 1, 
+                       limit_low && d == lo, 
+                       limit_high && d == hi);
             // res %= MOD;
         }
 

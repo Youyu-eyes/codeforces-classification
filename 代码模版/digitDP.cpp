@@ -1,6 +1,3 @@
-// 代码示例：返回 [low, high] 中的恰好包含 target 个 0 的数字个数
-// 比如 digitDP(0, 10, 1) == 2
-// 要点：我们统计的是 0 的个数，需要区分【前导零】和【数字中的零】，前导零不能计入，而数字中的零需要计入
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -44,8 +41,10 @@ long long digitDP(long long low, long long high, int target) {
         }
 
         for (; d <= hi; d++) {
-            // 统计 0 的个数
-            res += dfs(i + 1, cnt0 + (d == 0), limit_low && d == lo, limit_high && d == hi);
+            res += dfs(i + 1, 
+                       cnt0 + (d == 0), 
+                       limit_low && d == lo, 
+                       limit_high && d == hi);
             // res %= MOD;
         }
 
