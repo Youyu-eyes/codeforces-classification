@@ -42,7 +42,7 @@ long long digitDP(long long low, long long high, int target) {
 
         for (; d <= hi; d++) {
             res += dfs(i + 1, 
-                       cnt0 + (d == 0), 
+                       cnt0 + (d == 0), // 根据题目更改
                        limit_low && d == lo, 
                        limit_high && d == hi);
             // res %= MOD;
