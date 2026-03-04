@@ -11,6 +11,13 @@
 # from heapq import nsmallest
 # from heapq import nlargest
 
+# from heapq import heapify_max
+# from heapq import heappush_max
+# from heapq import heappop_max
+# from heapq import heapreplace_max
+# from heapq import nsmallest_max
+# from heapq import nlargest_max
+
 # from functools import cache
 
 # from itertools import accumulate
