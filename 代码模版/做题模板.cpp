@@ -4,7 +4,7 @@ using namespace std;
 using ll = long long;
 const int MOD = 1'000'000'007;
 const int inf = INT_MAX;
-const ll ll_inf = LONG_LONG_MAX;
+const ll ll_inf = LLONG_MAX;
 
 void solve() {
 
