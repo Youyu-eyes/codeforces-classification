@@ -1,6 +1,8 @@
 from heapq import heappop, heappush
 from math import inf
 from typing import List, Tuple
+
+# dijkstra：单源最短路
 def shortestPathDijkstra(n: int, edges: List[List[int]], start: int) -> List[int]:
     # 注：如果节点编号从 1 开始（而不是从 0 开始），可以把 n 加一
     g = [[] for _ in range(n)]  # 邻接表
@@ -26,7 +28,28 @@ def shortestPathDijkstra(n: int, edges: List[List[int]], start: int) -> List[int
 
     return dis
 
-# 作者：灵茶山艾府
-# 链接：https://leetcode.cn/discuss/post/01LUak/
-# 来源：力扣（LeetCode）
-# 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+# Floyd：全源最短路
+
+# 返回一个二维列表，其中 (i,j) 这一项表示从 i 到 j 的最短路长度
+# 如果无法从 i 到 j，则最短路长度为 math.inf
+# 允许负数边权
+# 如果计算完毕后，存在 i，使得从 i 到 i 的最短路长度小于 0，说明图中有负环
+# 节点编号从 0 到 n-1
+# 时间复杂度 O(n^3 + m)，其中 m 是 edges 的长度
+def shortestPathFloyd(self, n: int, edges: List[List[int]]) -> List[List[int]]:
+    f = [[inf] * n for _ in range(n)]
+    for i in range(n):
+        f[i][i] = 0
+
+    for x, y, wt in edges:
+        f[x][y] = min(f[x][y], wt)  # 如果有重边，取边权最小值
+        f[y][x] = min(f[y][x], wt)  # 无向图
+
+    for k in range(n):
+        for i in range(n):
+            if f[i][k] == inf:  # 针对稀疏图的优化
+                continue
+            for j in range(n):
+                f[i][j] = min(f[i][j], f[i][k] + f[k][j])
+    return f
