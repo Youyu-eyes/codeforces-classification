@@ -1,5 +1,13 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+const int MOD = 1'000'000'007;
+const int inf = INT_MAX;
+const ll ll_inf = LLONG_MAX;
+
 // 时间复杂度 O(sqrt(n))
-bool is_prime(int n) {
+bool is__prime(int n) {
     for (int i = 2; i * i <= n; i++) {
         if (n % i == 0) {
             return false;
