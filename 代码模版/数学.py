@@ -38,12 +38,14 @@ def prime_factorization(x: int) -> List[Tuple[int, int]]:
         res.append((p, e))
     return res
 
+
 # 预处理每个数的因子
 MX = 1_000_001  # **根据题目调整**
 divisors = [[] for _ in range(MX)]
 for i in range(1, MX):
     for j in range(i, MX, i):  # 枚举 i 的倍数 j
         divisors[j].append(i)  # i 是 j 的因子
+
 
 # 离散化
 def discretize(arr):
@@ -52,7 +54,8 @@ def discretize(arr):
     discretized = [value_to_index[x] for x in arr]
     return discretized
 
-# 向量
+
+# 凸包
 class Vec:
     __slots__ = 'x', 'y'
 
@@ -66,11 +69,33 @@ class Vec:
     def det(self, b: "Vec") -> int:
         return self.x * b.y - self.y * b.x
 
-    def dot(self, b: "Vec") -> int:
-        return self.x * b.x + self.y * b.y
-    
-# 初始化及用法
-# x = 1; y = 1
-# a = Vec(x, y)
-# b = Vec(x, y)
-# a.dot(b)
+# Andrew 算法，计算 points 的凸包（逆时针顺序）
+# 时间复杂度 O(n log n)，其中 n = len(points)
+def convexHull(points: List[Vec]) -> List[Vec]:
+    if len(points) <= 1:
+        return points
+
+    points.sort(key=lambda p: (p.x, p.y))
+
+    q = []
+
+    # 计算下凸包（从左到右）
+    for p in points:
+        # 新来的点 p，能否让旧的点变成在凸包内的点？ ->  需要判断向量左右关系  ->  det
+        while len(q) > 1 and (q[-1] - q[-2]).det(p - q[-1]) <= 0:
+            q.pop()
+        q.append(p)
+
+    # 计算上凸包（从右到左）
+    # 注意下凸包的最后一个点，已经是上凸包的（右边）第一个点了，所以从 n-2 开始遍历
+    lower_size = len(q)
+    for i in range(len(points) - 2, -1, -1):
+        p = points[i]
+        while len(q) > lower_size and (q[-1] - q[-2]).det(p - q[-1]) <= 0:
+            q.pop()
+        q.append(p)
+
+    # 此时首尾是同一个点 points[0]，需要去掉
+    q.pop()
+
+    return q
