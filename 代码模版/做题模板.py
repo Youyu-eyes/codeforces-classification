@@ -23,6 +23,8 @@
 # from itertools import accumulate
 # from itertools import zip_longest
 # from itertools import pairwise
+# from itertools import combinations
+# from itertools import permutations
 
 # from bisect import bisect_left
 
