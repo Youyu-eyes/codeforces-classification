@@ -51,3 +51,6 @@ public:
         return sz[find(x)]; // 集合大小保存在代表元上
     }
 };
+
+// 初始化
+// UnionFind uf(n);
