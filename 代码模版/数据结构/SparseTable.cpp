@@ -42,3 +42,6 @@ public:
         return max(st_max[k][l], st_max[k][r - (1 << k)]);
     }
 };
+
+// 初始化
+// SparseTable st(nums);
