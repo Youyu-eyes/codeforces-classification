@@ -83,3 +83,64 @@ int init = [] {
     return 0;
 }();
 
+// 离散化
+vector<int> discretize(vector<int>& arr, int& m) {
+    vector<int> sorted_unique = arr;
+    sort(sorted_unique.begin(), sorted_unique.end());
+    sorted_unique.erase(unique(sorted_unique.begin(), sorted_unique.end()), sorted_unique.end());
+    m = sorted_unique.size();
+    vector<int> discretized;
+    for (int x : arr) {
+        discretized.push_back(lower_bound(sorted_unique.begin(), sorted_unique.end(), x) - sorted_unique.begin());
+    }
+    return discretized;
+}
+// 初始化
+// auto discretized_nums = discretize(nums, m);
+
+
+// 凸包
+struct Vec {
+    int x, y;
+
+    Vec sub(const Vec& b) const {
+        return {x - b.x, y - b.y};
+    }
+
+    long long det(const Vec& b) const {
+        return 1LL * x * b.y - 1LL * y * b.x;
+    }
+};
+
+// Andrew 算法，计算 points 的凸包（逆时针顺序）
+// 时间复杂度 O(n log n)，其中 n = points.size()
+vector<Vec> convexHull(vector<Vec>& points) {
+    ranges::sort(points, {}, [](auto& p) { return pair(p.x, p.y); });
+
+    vector<Vec> q;
+
+    // 计算下凸包（从左到右）
+    for (auto& p : points) {
+        // 新来的点 p，能否让旧的点变成在凸包内的点？ ->  需要判断向量左右关系  ->  det
+        while (q.size() > 1 && q.back().sub(q[q.size() - 2]).det(p.sub(q.back())) <= 0) {
+            q.pop_back();
+        }
+        q.push_back(p);
+    }
+
+    // 计算上凸包（从右到左）
+    // 注意下凸包的最后一个点，已经是上凸包的（右边）第一个点了，所以从 n-2 开始遍历
+    int lower_size = q.size();
+    for (int i = (int) points.size() - 2; i >= 0; i--) {
+        auto& p = points[i];
+        while (q.size() > lower_size && q.back().sub(q[q.size() - 2]).det(p.sub(q.back())) <= 0) {
+            q.pop_back();
+        }
+        q.push_back(p);
+    }
+
+    // 此时首尾是同一个点 points[0]，需要去掉
+    q.pop_back();
+
+    return q;
+}
