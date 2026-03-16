@@ -144,3 +144,56 @@ vector<Vec> convexHull(vector<Vec>& points) {
 
     return q;
 }
+
+
+// 快速幂
+double myPow(double x, int N) {
+    double ans = 1;
+    long long n = N;
+    if (n < 0) {
+        n = -n;
+        x = 1 / x;
+    }
+    while (n) {
+        if (n & 1) {
+            ans *= x;
+        }
+        x *= x;
+        n >>= 1;
+    }
+    return ans;
+}
+
+
+// 矩阵快速幂
+using matrix = vector<vector<long long>>;
+
+// 返回矩阵 a 和矩阵 b 相乘的结果
+matrix mul(matrix& a, matrix& b) {
+    int n = a.size(), m = b[0].size();
+    matrix c = matrix(n, vector<long long>(m));
+    for (int i = 0; i < n; i++) {
+        for (int k = 0; k < a[i].size(); k++) {
+            if (a[i][k] == 0) {
+                continue;
+            }
+            for (int j = 0; j < m; j++) {
+                c[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+    return c;
+}
+
+// a^n * f0
+matrix pow_mul(matrix a, int n, matrix& f0) {
+    matrix res = f0;
+    while (n) {
+        if (n & 1) {
+            res = mul(a, res);
+        }
+        a = mul(a, a);
+        n >>= 1;
+    }
+    return res;
+}
