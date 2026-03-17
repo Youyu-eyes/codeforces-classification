@@ -16,6 +16,7 @@
 // 剩余 t - (i - j - 1) 步，区间和为 (i - j) * min{i, j}，其中 min{i, j} 表示 nums 从 j 到 i - 1 (左闭右开)区间最小值
 // j 的下界：需要保证 t - (i - j - 1) >= 0 => 解得 j >= i - t - 1，上界为 i - 2，因为 i - 1 就不需要操作了
 // f[i][t] = min{j = [i - t - 1, i - 2]}(f[j][t - (i - j - 1)] + (i - j) * min{i, j})
+// 补一句，注意乘法溢出
 // 最后两者取 min
 
 // 由于 t <= k <= 10，枚举 j 的开销很小，时间复杂度 O(n*k^2)
@@ -86,8 +87,8 @@ void solve() {
     SparseTable st(nums);
     ll s = nums[0];
 
-    if (n < k) {
-        cout << st.query_min(0, n) * n << endl;
+    if (k >= n - 1) {
+        cout << 1LL * st.query_min(0, n) * n << endl;
         return;
     }
 
@@ -96,7 +97,7 @@ void solve() {
         f[i][0] = s;
         s += nums[i];
         for (int t = i; t <= k; ++t) {
-            f[i][t] = st.query_min(0, i) * i;
+            f[i][t] = 1LL * st.query_min(0, i) * i;
         }
     }
 
@@ -104,7 +105,7 @@ void solve() {
         for (int t = 0; t <= k && t < i; ++t) {
             f[i][t] = f[i - 1][t] + nums[i - 1];
             for (int j = i - t - 1; j <= i - 2; ++j) {
-                f[i][t] = min(f[i][t], f[j][t - (i - j - 1)] + (i - j) * st.query_min(j, i));
+                f[i][t] = min(f[i][t], f[j][t - (i - j - 1)] + 1LL * (i - j) * st.query_min(j, i));
             }
         }
     }
