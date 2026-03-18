@@ -1,3 +1,13 @@
+// https://cpc.zufe.ac.cn/contest/7/sub/5/problem/E
+// 最短路问题
+// dijkstra
+
+// 由于本题只要求经过一个安全站，则可以枚举安全站
+// 整段路径就被分为两部分：从 start -> 安全站 -> end
+// 计算每个安全站到 end 的最短距离是多源最短路，复杂度高，可以转化为从 end 走到 每个安全站的距离，这样就是单源最短路
+// 反向从 end 出发，反向建图即可，即 u -> v 改为 v -> u
+// 跑两遍 dijkstra，枚举安全站计算 dis(start -> 安全站) + dis(end -> 安全站) 的最小值
+
 #include <bits/stdc++.h>
 using namespace std;
 
