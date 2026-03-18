@@ -1,3 +1,6 @@
+// https://cpc.zufe.ac.cn/contest/7/sub/5/problem/A
+// 模拟即可
+
 #include <bits/stdc++.h>
 using namespace std;
 
