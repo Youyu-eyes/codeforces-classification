@@ -1,3 +1,10 @@
+// https://cpc.zufe.ac.cn/contest/7/sub/5/problem/M
+// 划分型DP + 单调队列优化
+
+// 反向思考
+// 假设我们有一个长为 n 的数组
+// 如果 n 是偶数，我们可以切半
+
 #include <bits/stdc++.h>
 using namespace std;
 
