@@ -67,6 +67,26 @@ class SegmentTree {
         return merge_val(l_res, r_res);
     }
 
+    int _find_first(int node, int l, int r, int ql, int qr, const std::function<bool(const T&)>& f) const {
+        if (r < ql || l > qr) return -1;          // 区间无交集
+        if (!f(tree[node])) return -1;            // 整个区间不满足条件
+        if (l == r) return l;                      // 叶子节点
+        int m = (l + r) / 2;
+        int left_res = _find_first(node*2, l, m, ql, qr, f);
+        if (left_res != -1) return left_res;
+        return _find_first(node*2+1, m+1, r, ql, qr, f);
+    }
+
+    int _find_last(int node, int l, int r, int ql, int qr, const std::function<bool(const T&)>& f) const {
+        if (r < ql || l > qr) return -1;
+        if (!f(tree[node])) return -1;
+        if (l == r) return l;
+        int m = (l + r) / 2;
+        int right_res = _find_last(node*2+1, m+1, r, ql, qr, f);
+        if (right_res != -1) return right_res;
+        return _find_last(node*2, l, m, ql, qr, f);
+    }
+
 public:
     // 线段树维护一个长为 n 的数组（下标从 0 到 n-1），元素初始值为 init_val
     SegmentTree(int n, T init_val) : SegmentTree(vector<T>(n, init_val)) {}
@@ -93,6 +113,21 @@ public:
     T get(int i) const {
         return query(1, 0, n - 1, i, i);
     }
+
+    // 返回 [ql, qr] 内第一个满足 f 的下标，如果不存在，返回 -1
+    // 例如查询区间内第一个大于等于 target 的元素下标，需要线段树维护区间最大值
+    //     int idx = seg.find_first(l, r, [&](const T& node_max) { return node_max >= target; });
+    int find_first(int ql, int qr, const std::function<bool(const T&)>& f) const {
+        return _find_first(1, 0, n-1, ql, qr, f);
+    }
+
+    // 返回 [ql, qr] 内最后一个满足 f 的下标，如果不存在，返回 -1
+    // 例如查询区间内最后一个小于等于 target 的元素下标，需要线段树维护区间最小值
+    //     int idx = seg.find_last(l, r, [&](const T& node_min) { return node_min <= target; });
+    int find_last(int ql, int qr, const std::function<bool(const T&)>& f) const {
+        return _find_last(1, 0, n-1, ql, qr, f);
+    }
+
 };
 
 // Lazy 线段树
@@ -198,6 +233,30 @@ class LazySegmentTree {
         return merge_val(l_res, r_res);
     }
 
+    // 私有递归：查找第一个满足条件的下标
+    int _find_first(int node, int l, int r, int ql, int qr, const std::function<bool(const T&)>& f) {
+        if (r < ql || l > qr) return -1;
+        if (!f(tree[node].val)) return -1;
+        if (l == r) return l;
+        spread(node, l, r); // 下传懒标记
+        int m = (l + r) / 2;
+        int left_res = _find_first(node*2, l, m, ql, qr, f);
+        if (left_res != -1) return left_res;
+        return _find_first(node*2+1, m+1, r, ql, qr, f);
+    }
+
+    // 私有递归：查找最后一个满足条件的下标
+    int _find_last(int node, int l, int r, int ql, int qr, const std::function<bool(const T&)>& f) {
+        if (r < ql || l > qr) return -1;
+        if (!f(tree[node].val)) return -1;
+        if (l == r) return l;
+        spread(node, l, r);
+        int m = (l + r) / 2;
+        int right_res = _find_last(node*2+1, m+1, r, ql, qr, f);
+        if (right_res != -1) return right_res;
+        return _find_last(node*2, l, m, ql, qr, f);
+    }
+
 public:
     // 线段树维护一个长为 n 的数组（下标从 0 到 n-1），元素初始值为 init_val
     LazySegmentTree(int n, T init_val = 0) : LazySegmentTree(vector<T>(n, init_val)) {}
@@ -219,6 +278,19 @@ public:
     // 时间复杂度 O(log n)
     T query(int ql, int qr) {
         return query(1, 0, n - 1, ql, qr);
+    }
+    // 返回 [ql, qr] 内第一个满足 f 的下标，如果不存在，返回 -1
+    // 例如查询区间内第一个大于等于 target 的元素下标，需要线段树维护区间最大值
+    //     int idx = seg.find_first(l, r, [&](const T& node_max) { return node_max >= target; });
+    int find_first(int ql, int qr, const std::function<bool(const T&)>& f) {
+        return _find_first(1, 0, n-1, ql, qr, f);
+    }
+
+    // 返回 [ql, qr] 内最后一个满足 f 的下标，如果不存在，返回 -1
+    // 例如查询区间内最后一个小于等于 target 的元素下标，需要线段树维护区间最小值
+    //     int idx = seg.find_last(l, r, [&](const T& node_min) { return node_min <= target; });
+    int find_last(int ql, int qr, const std::function<bool(const T&)>& f) {
+        return _find_last(1, 0, n-1, ql, qr, f);
     }
 };
 
