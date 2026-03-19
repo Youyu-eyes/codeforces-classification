@@ -41,7 +41,7 @@ class UnionFind:
 
 # 带权并查集
 # 模板来源 https://leetcode.cn/circle/discuss/mOr1u6/
-class UnionFind:
+class UnionFindWithWight:
     def __init__(self, n: int):
         # 一开始有 n 个集合 {0}, {1}, ..., {n-1}
         # 集合 i 的代表元是自己，自己到自己的距离是 0
