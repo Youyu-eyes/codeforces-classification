@@ -100,31 +100,32 @@ def convexHull(points: List[Vec]) -> List[Vec]:
 
     return q
 
-# 快速幂
-def myPow(x: float, n: int) -> float:
-    ans = 1
-    if n < 0:
-        n = -n
-        x = 1 / x
-    while n:
-        if n & 1:
-            ans *= x
-        x *= x
-        n >>= 1
-    return ans
-
 # 矩阵快速幂
 # a @ b，其中 @ 是矩阵乘法
-def mul(a: List[List[int]], b: List[List[int]]) -> List[List[int]]:
-    return [[sum(x * y for x, y in zip(row, col)) for col in zip(*b)]
-            for row in a]
+def mul(a, b, mod=None):
+    # 获取矩阵维度
+    m = len(a)                # a 的行数
+    n = len(a[0]) if m else 0 # a 的列数 / b 的行数
+    p = len(b[0]) if b else 0 # b 的列数
+    # 初始化结果矩阵为全零
+    res = [[0] * p for _ in range(m)]
+    for i in range(m):
+        for k in range(n):
+            aik = a[i][k]
+            if aik == 0:      # 跳过零元素，优化计算
+                continue
+            for j in range(p):
+                res[i][j] += aik * b[k][j]
+                if mod is not None:   # 若指定了模数，立即取模
+                    res[i][j] %= mod
+    return res
 
 # a^n @ f0
-def pow_mul(a: List[List[int]], n: int, f0: List[List[int]]) -> List[List[int]]:
+def pow_mul(a, n, f0, mod=None):
     res = f0
     while n:
         if n & 1:
-            res = mul(a, res)
-        a = mul(a, a)
+            res = mul(a, res, mod)
+        a = mul(a, a, mod)
         n >>= 1
     return res

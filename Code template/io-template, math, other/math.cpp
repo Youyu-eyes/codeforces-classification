@@ -146,53 +146,78 @@ vector<Vec> convexHull(vector<Vec>& points) {
 }
 
 
-// 快速幂
-double myPow(double x, int N) {
-    double ans = 1;
-    long long n = N;
-    if (n < 0) {
-        n = -n;
-        x = 1 / x;
-    }
-    while (n) {
-        if (n & 1) {
-            ans *= x;
+// 完整快速幂模板，包含取模，计算逆元，因此支持负指数
+template<typename T = long long>
+T myPow(long long x, long long n, long long mod = 0) {
+    long long ans = 1;
+    long long base = x;
+    long long exp = n;
+
+    // 如果模数非零，先对底数取模
+    if (mod) base %= mod;
+
+    // 处理负指数
+    if (exp < 0) {
+        if (!mod) return T(0);   // 无模数模式下负指数无意义，返回0
+        // 模质数下求逆元（费马小定理）
+        long long inv = 1, b = base, p = mod - 2;
+        while (p) {
+            if (p & 1) inv = (inv * b) % mod;
+            b = (b * b) % mod;
+            p >>= 1;
         }
-        x *= x;
-        n >>= 1;
+        base = inv;
+        exp = -exp;
     }
-    return ans;
+
+    while (exp) {
+        if (exp & 1) {
+            ans *= base;
+            if (mod) ans %= mod;
+        }
+        base *= base;
+        if (mod) base %= mod;
+        exp >>= 1;
+    }
+    return T(ans);
 }
 
+// 模板用例
+// auto a = myPow(2, 10);                 // 1024 (long long)
+// auto b = myPow<int>(2, 10, 1000);      // 24 (int)
+// auto c = myPow(2, 10, 1000);           // 24 (long long)
+// auto d = myPow<int>(2, -1, 1000000007); // 500000004 (2的逆元)
 
-// 矩阵快速幂
+
+// 矩阵快速幂模板
+using namespace std;
 using matrix = vector<vector<long long>>;
 
-// 返回矩阵 a 和矩阵 b 相乘的结果
-matrix mul(matrix& a, matrix& b) {
+// 返回矩阵 a 和矩阵 b 相乘的结果，若 mod > 0 则取模
+matrix mul(matrix& a, matrix& b, long long mod = 0) {
     int n = a.size(), m = b[0].size();
-    matrix c = matrix(n, vector<long long>(m));
+    matrix c(n, vector<long long>(m, 0));
     for (int i = 0; i < n; i++) {
         for (int k = 0; k < a[i].size(); k++) {
-            if (a[i][k] == 0) {
-                continue;
-            }
+            if (a[i][k] == 0) continue;
+            long long aik = a[i][k];
             for (int j = 0; j < m; j++) {
-                c[i][j] += a[i][k] * b[k][j];
+                c[i][j] += aik * b[k][j];
+                if (mod > 0) c[i][j] %= mod;
             }
         }
     }
     return c;
 }
 
-// a^n * f0
-matrix pow_mul(matrix a, int n, matrix& f0) {
-    matrix res = f0;
+// 计算 A^n * f0，若 mod > 0 则所有乘法取模
+matrix pow_mul(matrix a, int n, matrix& f0, long long mod = 0) {
+    matrix res = f0;   // 初始结果即为 f0
     while (n) {
         if (n & 1) {
-            res = mul(a, res);
+            res = mul(a, res, mod);   // 左乘 A
         }
-        a = mul(a, a);
+        a = mul(a, a, mod);           // A 自乘
         n >>= 1;
     }
     return res;
