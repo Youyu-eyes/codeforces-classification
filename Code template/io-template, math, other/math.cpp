@@ -107,9 +107,14 @@ struct Vec {
         return {x - b.x, y - b.y};
     }
 
-    long long det(const Vec& b) const {
-        return 1LL * x * b.y - 1LL * y * b.x;
+    __int128 det(const Vec& b) {
+        return (__int128) x * b.y - (__int128) y * b.x;
     }
+
+    ll dot(const Vec& b) {
+        return x * b.x + y * b.y;
+    }
+
 };
 
 // Andrew 算法，计算 points 的凸包（逆时针顺序）

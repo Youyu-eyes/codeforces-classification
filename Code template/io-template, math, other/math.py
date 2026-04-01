@@ -69,6 +69,9 @@ class Vec:
     def det(self, b: "Vec") -> int:
         return self.x * b.y - self.y * b.x
 
+    def dot(self, b: "Vec") -> int:
+        return self.x * b.x + self.y * b.y
+
 # Andrew 算法，计算 points 的凸包（逆时针顺序）
 # 时间复杂度 O(n log n)，其中 n = len(points)
 def convexHull(points: List[Vec]) -> List[Vec]:
