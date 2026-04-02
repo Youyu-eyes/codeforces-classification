@@ -101,7 +101,7 @@ vector<int> discretize(vector<int>& arr, int& m) {
 
 // 凸包
 struct Vec {
-    int x, y;
+    ll x, y;
 
     Vec operator-(const Vec& b) {
         return Vec(x - b.x, y - b.y);
