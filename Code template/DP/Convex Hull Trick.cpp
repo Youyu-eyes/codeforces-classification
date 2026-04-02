@@ -7,21 +7,57 @@ ll inf = LLONG_MAX;
 
 struct Vec {
     ll x, y;
-    Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
+
+    Vec operator-(const Vec& b) {
+        return Vec(x - b.x, y - b.y);
+    }
+
+    __int128 det(const Vec& b) {
+        return (__int128) x * b.y - (__int128) y * b.x;
+    }
+
+    ll dot(const Vec& b) {
+        return x * b.x + y * b.y;
+    }
+
 };
 
-Vec operator-(const Vec& a, const Vec& b) {
-    return Vec(a.x - b.x, a.y - b.y);
+
+// 向量 v0 单调
+void solve1() {
+    int n; cin >> n;
+    vector<ll> a(n);
+    vector<ll> b(n);
+    for (int i = 0; i < n; ++i) {
+        cin >> a[i];
+    }
+    for (int i = 0; i < n; ++i) {
+        cin >> b[i];
+    }
+    
+    vector<ll> f(n);
+    deque<Vec> q;
+    q.push_back(Vec(b[0], 0));
+    for (int i = 1; i < n; ++i) {
+        Vec v0(a[i], 1);
+        while (q.size() > 1 && v0.dot(q[0]) >= v0.dot(q[1])) {
+            q.pop_front();
+        }
+
+        f[i] = v0.dot(q[0]);
+        Vec v1(b[i], f[i]);
+
+        while (q.size() > 1 && (v1 - q[q.size() - 2]).det(q.back() - q[q.size() - 2]) <= 0) {
+            q.pop_back();
+        }
+        q.push_back(v1);
+    }
+
+    cout << f[n - 1] << endl;
 }
 
-__int128 det(const Vec& a, const Vec& b) {
-    return (__int128) a.x * b.y - (__int128) a.y * b.x;
-}
 
-ll dot(const Vec& a, const Vec& b) {
-    return a.x * b.x + a.y * b.y;
-}
-
+// 向量 v0 不单调，二分下凸包
 void solve() {
     int n; cin >> n;
     unordered_map<ll, int> cnt;
@@ -43,7 +79,7 @@ void solve() {
         ll l = 0, r = q.size() - 1;
         while (l < r) {
             ll mid = (l + r) / 2;
-            if (dot(v0, q[mid]) <= dot(v0, q[mid + 1])) {
+            if (v0.dot(q[mid]) <= v0.dot(q[mid + 1])) {
                 r = mid;
             } else {
                 l = mid + 1;
@@ -51,11 +87,11 @@ void solve() {
         }
         
         // 更新答案
-        f[i] = dot(v0, q[l]);
+        f[i] = v0.dot(q[l]);
 
         // 维护下凸包
         Vec v(f[i], i);
-        while (q.size() > 1 && det(q[q.size() - 1] - q[q.size() - 2], v - q[q.size() - 1]) <= 0) {
+        while (q.size() > 1 && (q[q.size() - 1] - q[q.size() - 2]).det(v - q[q.size() - 1]) <= 0) {
             q.pop_back();
         }
         q.push_back(v);
