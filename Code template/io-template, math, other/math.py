@@ -7,6 +7,7 @@ def is_prime(n: int) -> bool:
             return False
     return n >= 2
 
+
 # 埃氏筛
 MX = 1_000_001
 is_prime = [False] * 2 + [True] * (MX - 2)
@@ -103,6 +104,7 @@ def convexHull(points: List[Vec]) -> List[Vec]:
 
     return q
 
+
 # 矩阵快速幂
 # a @ b，其中 @ 是矩阵乘法
 def mul(a, b, mod=None):
@@ -132,3 +134,24 @@ def pow_mul(a, n, f0, mod=None):
         a = mul(a, a, mod)
         n >>= 1
     return res
+
+
+# 预处理阶乘及逆元
+MOD = 10**9 + 7
+MX = 100000
+MAX = 2 * MX
+
+fac = [1] * (MAX + 1)
+for i in range(1, MAX + 1):
+    fac[i] = fac[i - 1] * i % MOD
+
+inv_fac = [1] * (MAX + 1)
+inv_fac[MAX] = pow(fac[MAX], -1, MOD)   # 直接求逆元
+for i in range(MAX, 0, -1):
+    inv_fac[i - 1] = inv_fac[i] * i % MOD
+
+# 卡特兰数
+def catalan(n):
+    if n == 0:
+        return 1
+    return fac[2 * n] * inv_fac[n] % MOD * inv_fac[n] % MOD * pow(n + 1, -1, MOD) % MOD

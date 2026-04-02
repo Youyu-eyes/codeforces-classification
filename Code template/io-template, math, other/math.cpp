@@ -227,3 +227,66 @@ matrix pow_mul(matrix a, int n, matrix& f0, long long mod = 0) {
     }
     return res;
 }
+
+
+// 预处理阶乘及逆元
+const int MX = 100000;          // 卡特兰数的最大下标
+const int MAX = 2 * MX;         // 需要预处理的阶乘最大下标
+
+vector<long long> fac(MAX + 1), inv_fac(MAX + 1);
+
+template<typename T = long long>
+T myPow(long long x, long long n, long long mod = 0) {
+    long long ans = 1;
+    long long base = x;
+    long long exp = n;
+
+    if (mod) base %= mod;
+
+    if (exp < 0) {
+        if (!mod) return T(0);
+        // 模质数下求逆元（费马小定理）
+        long long inv = 1, b = base, p = mod - 2;
+        while (p) {
+            if (p & 1) inv = (inv * b) % mod;
+            b = (b * b) % mod;
+            p >>= 1;
+        }
+        base = inv;
+        exp = -exp;
+    }
+
+    while (exp) {
+        if (exp & 1) {
+            ans *= base;
+            if (mod) ans %= mod;
+        }
+        base *= base;
+        if (mod) base %= mod;
+        exp >>= 1;
+    }
+    return T(ans);
+}
+
+// 预处理阶乘和逆元
+void init() {
+    fac[0] = 1;
+    for (int i = 1; i <= MAX; ++i) {
+        fac[i] = fac[i - 1] * i % MOD;
+    }
+    // 使用 myPow 计算 fac[MAX] 的逆元
+    inv_fac[MAX] = myPow<long long>(fac[MAX], -1, MOD);
+    for (int i = MAX; i >= 1; --i) {
+        inv_fac[i - 1] = inv_fac[i] * i % MOD;
+    }
+}
+
+// 返回第 n 个卡特兰数 (C_n) 模 MOD
+long long catalan(int n) {
+    assert(0 <= n && n <= MX);
+    if (n == 0) return 1;
+    // C_n = C(2n, n) / (n+1)
+    long long comb = fac[2 * n] * inv_fac[n] % MOD * inv_fac[n] % MOD;
+    long long inv_n1 = myPow<long long>(n + 1, -1, MOD);   // 求 (n+1) 的逆元
+    return comb * inv_n1 % MOD;
+}
