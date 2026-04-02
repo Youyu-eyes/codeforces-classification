@@ -67,6 +67,8 @@ class Vec:
     def __sub__(self, b: "Vec") -> "Vec":
         return Vec(self.x - b.x, self.y - b.y)
 
+    # a.det(b) > 0 => a 到 b 逆时针
+    # a.det(b) < 0 => a 到 b 顺时针
     def det(self, b: "Vec") -> int:
         return self.x * b.y - self.y * b.x
 

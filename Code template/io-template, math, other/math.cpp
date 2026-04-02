@@ -107,6 +107,8 @@ struct Vec {
         return Vec(x - b.x, y - b.y);
     }
 
+    // a.det(b) > 0 => a 到 b 逆时针
+    // a.det(b) < 0 => a 到 b 顺时针
     __int128 det(const Vec& b) {
         return (__int128) x * b.y - (__int128) y * b.x;
     }
