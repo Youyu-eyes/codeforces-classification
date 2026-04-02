@@ -91,7 +91,6 @@ public:
     T get_relative_distance(int from, int to) {
         find(from);
         find(to);
-        // to-from = (x-from) - (x-to) = dis[from] - dis[to]
         return dis[from] - dis[to];
     }
 
@@ -100,17 +99,10 @@ public:
     // 如果 from 和 to 不在同一个集合，返回 true，否则返回是否与已知信息矛盾
     bool merge(int from, int to, T value) {
         int x = find(from), y = find(to);
-        if (x == y) { // from 和 to 在同一个集合，不做合并
-            // to-from = (x-from) - (x-to) = dis[from] - dis[to] = value
+        if (x == y) {
             return dis[from] - dis[to] == value;
         }
-        //    x --------- y
-        //   /           /
-        // from ------- to
-        // 已知 x-from = dis[from] 和 y-to = dis[to]，现在合并 from 和 to，新增信息 to-from = value
-        // 由于 y-from = (y-x) + (x-from) = (y-to) + (to-from)
-        // 所以 y-x = (to-from) + (y-to) - (x-from) = value + dis[to] - dis[from]
-        dis[x] = value + dis[to] - dis[from]; // 计算 x 到其代表元 y 的距离
+        dis[x] = value + dis[to] - dis[from];
         fa[x] = y;
         return true;
     }

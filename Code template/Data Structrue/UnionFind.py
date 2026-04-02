@@ -67,7 +67,6 @@ class UnionFindWithWight:
     def get_relative_distance(self, from_: int, to: int) -> int:
         self.find(from_)
         self.find(to)
-        # to-from = (x-from) - (x-to) = dis[from] - dis[to]
         return self.dis[from_] - self.dis[to]
 
     # 合并 from 和 to，新增信息 to - from = value
@@ -76,15 +75,8 @@ class UnionFindWithWight:
     def merge(self, from_: int, to: int, value: int) -> bool:
         x, y = self.find(from_), self.find(to)
         dis = self.dis
-        if x == y:  # from 和 to 在同一个集合，不做合并
-            # to-from = (x-from) - (x-to) = dis[from] - dis[to] = value
+        if x == y:
             return dis[from_] - dis[to] == value
-        #    x --------- y
-        #   /           /
-        # from ------- to
-        # 已知 x-from = dis[from] 和 y-to = dis[to]，现在合并 from 和 to，新增信息 to-from = value
-        # 由于 y-from = (y-x) + (x-from) = (y-to) + (to-from)
-        # 所以 y-x = (to-from) + (y-to) - (x-from) = value + dis[to] - dis[from]
-        dis[x] = value + dis[to] - dis[from_]  # 计算 x 到其代表元 y 的距离
+        dis[x] = value + dis[to] - dis[from_]
         self.fa[x] = y
         return True
