@@ -88,7 +88,7 @@ def convexHull(points: List[Vec]) -> List[Vec]:
     # 计算下凸包（从左到右）
     for p in points:
         # 新来的点 p，能否让旧的点变成在凸包内的点？ ->  需要判断向量左右关系  ->  det
-        while len(q) > 1 and (q[-1] - q[-2]).det(p - q[-1]) <= 0:
+        while len(q) > 1 and (p - q[-1]).det(q[-1] - q[-2]) >= 0:
             q.pop()
         q.append(p)
 

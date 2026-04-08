@@ -129,7 +129,7 @@ vector<Vec> convexHull(vector<Vec>& points) {
     // 计算下凸包（从左到右）
     for (auto& p : points) {
         // 新来的点 p，能否让旧的点变成在凸包内的点？ ->  需要判断向量左右关系  ->  det
-        while (q.size() > 1 && (p - q[q.size() - 2]).det(q.back() - q[q.size() - 2]) <= 0) {
+        while (q.size() > 1 && (p - q.back()).det(q.back() - q[q.size() - 2]) >= 0) {
             q.pop_back();
         }
         q.push_back(p);
