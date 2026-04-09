@@ -35,13 +35,14 @@ struct UpperHull {
     }
 
     // 单调查询，这里假设 p 的 x 单调递增，最大值点单调右移
+    // 复杂度 O(n)
     long long query_monotonic(const Vec& p) {
         while (hull.size() > 1 && p.dot(hull[0]) <= p.dot(hull[1]))
             hull.pop_front();
         return p.dot(hull.front());
     }
 
-    // 二分查询最大值
+    // 二分查询最大值，复杂度 O(nlogn)
     long long query_binary(const Vec& p) const {
         int l = 0, r = hull.size()-1;
         while (l < r) {
@@ -67,13 +68,14 @@ struct LowerHull {
     }
 
     // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
+    // 复杂度 O(n)
     long long query_monotonic(const Vec& p) {
         while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
             hull.pop_front();
         return p.dot(hull.front());
     }
 
-    // 二分查询最小值
+    // 二分查询最小值，复杂度 O(nlogn)
     long long query_binary(const Vec& p) const {
         int l = 0, r = hull.size()-1;
         while (l < r) {
