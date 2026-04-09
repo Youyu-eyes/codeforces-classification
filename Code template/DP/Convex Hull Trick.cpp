@@ -12,7 +12,7 @@ const ll ll_inf = 1e18;
 struct Vec {
     ll x, y;
     Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
-    
+
     Vec operator-(const Vec& other) const {
         return Vec(x - other.x, y - other.y);
     }
@@ -32,7 +32,7 @@ struct Vec {
 struct UpperHull {
     deque<Vec> hull;
     void add(const Vec& p) {
-        while (hull.size() > 1 && (p - hull.back()).det(hull.back() - hull[hull.size() - 2]) <= 0) {
+        while (hull.size() > 1 && (hull.back() - hull[hull.size() - 2]).det(p - hull.back()) >= 0) {
             hull.pop_back();
         }
 
@@ -65,7 +65,7 @@ struct UpperHull {
 struct LowerHull {
     deque<Vec> hull;
     void add(const Vec& p) {
-        while (hull.size() > 1 && (p - hull.back()).det(hull.back() - hull[hull.size() - 2]) >= 0) {
+        while (hull.size() > 1 && (hull.back() - hull[hull.size() - 2]).det(p - hull.back()) <= 0) {
             hull.pop_back();
         }
 
