@@ -30,21 +30,47 @@ const ll ll_inf = 1e18;
 
 struct Vec {
     ll x, y;
+    Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
+    Vec operator-(const Vec& other) const {
+        return Vec(x - other.x, y - other.y);
+    }
+    ll dot(const Vec& other) const {
+        return x * other.x + y * other.y;
+    }
+    __int128 det(const Vec& other) const {
+        return (__int128) x * other.y - (__int128) y * other.x;
+    }
+};
 
-    Vec operator-(const Vec& b) {
-        return Vec(x - b.x, y - b.y);
+struct UpperHull {
+    deque<Vec> hull;
+    void add(const Vec& p) {
+        while (hull.size() > 1 && (p - hull.back()).det(hull.back() - hull[hull.size() - 2]) <= 0) {
+            hull.pop_back();
+        }
+
+        hull.push_back(p);
     }
 
-    // a.det(b) > 0 => a 到 b 逆时针
-    // a.det(b) < 0 => a 到 b 顺时针
-    __int128 det(const Vec& b) {
-        return (__int128) x * b.y - (__int128) y * b.x;
+    // 单调查询，这里假设 p 的 x 单调递增，最大值点单调右移
+    long long query_monotonic(const Vec& p) {
+        while (hull.size() > 1 && p.dot(hull[0]) <= p.dot(hull[1]))
+            hull.pop_front();
+        return p.dot(hull.front());
     }
 
-    ll dot(const Vec& b) {
-        return x * b.x + y * b.y;
+    // 二分查询最大值
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size()-1;
+        while (l < r) {
+            int mid = (l+r)>>1;
+            if (p.dot(hull[mid]) <= p.dot(hull[mid+1])) l = mid+1;
+            else r = mid;
+        }
+        return p.dot(hull[l]);
     }
-
+    bool empty() const { return hull.empty(); }
+    void clear() { hull.clear(); }
 };
 
 void solve() {
@@ -57,23 +83,18 @@ void solve() {
     
     vector<ll> f(n);
     f[0] = 0;
-    deque<Vec> q;
-    q.push_back(Vec(0, 0));
+    UpperHull q;
+    q.add(Vec(0, 0));
     ll ans = 0;
 
     for (int i = 0; i < n; ++i) {
         Vec v0(-mat[i][1], 1);
-        while (q.size() > 1 && v0.dot(q[0]) <= v0.dot(q[1])) {
-            q.pop_front();
-        }
+        ll best = q.query_monotonic(v0);
 
-        f[i] = v0.dot(q[0]) + mat[i][0] * mat[i][1] - mat[i][2];
+        f[i] = best + mat[i][0] * mat[i][1] - mat[i][2];
         Vec v1(mat[i][0], f[i]);
 
-        while (q.size() > 1 && (v1 - q[q.size() - 2]).det(q.back() - q[q.size() - 2]) <= 0) {
-            q.pop_back();
-        }
-        q.push_back(v1);
+        q.add(v1);
         ans = max(ans, f[i]);
     }
 
