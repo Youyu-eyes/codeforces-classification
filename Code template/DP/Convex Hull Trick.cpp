@@ -7,7 +7,8 @@ const int inf = 0x3f3f3f3f;
 const ll ll_inf = 1e18;
 
 // 在使用模板时要注意：
-// 在维护凸包时要保证查询向量 p 的 y 值 p.y > 0，这样我们才能用 max or min 简单地判断用 上凸包 or 下凸包
+// 首先，在维护凸包时要保证查询向量 v0 的 y 值 v0.y > 0，这样我们才能用 max or min 简单地判断用 上凸包 or 下凸包
+// 其次，在维护凸包时要保证待维护向量 v1 的 x 值 v1.x 单调递增
 
 struct Vec {
     ll x, y;
