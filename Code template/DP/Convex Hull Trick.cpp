@@ -12,12 +12,17 @@ const ll ll_inf = 1e18;
 struct Vec {
     ll x, y;
     Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
+    
     Vec operator-(const Vec& other) const {
         return Vec(x - other.x, y - other.y);
     }
+
     ll dot(const Vec& other) const {
         return x * other.x + y * other.y;
     }
+
+    // a.det(b) > 0 => a 到 b 逆时针
+    // a.det(b) < 0 => a 到 b 顺时针
     __int128 det(const Vec& other) const {
         return (__int128) x * other.y - (__int128) y * other.x;
     }
