@@ -66,19 +66,49 @@ const ll ll_inf = 1e18;
 
 struct Vec {
     ll x, y;
+    Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
+    Vec operator-(const Vec& other) const {
+        return Vec(x - other.x, y - other.y);
+    }
+    ll dot(const Vec& other) const {
+        return x * other.x + y * other.y;
+    }
+    __int128 det(const Vec& other) const {
+        return (__int128) x * other.y - (__int128) y * other.x;
+    }
+};
 
-    Vec operator-(const Vec& b) {
-        return Vec(x - b.x, y - b.y);
+// 下凸包（求最小值）
+struct LowerHull {
+    deque<Vec> hull;
+    void add(const Vec& p) {
+        while (hull.size() > 1 && (p - hull.back()).det(hull.back() - hull[hull.size() - 2]) >= 0) {
+            hull.pop_back();
+        }
+
+        hull.push_back(p);
     }
 
-    __int128 det(const Vec& b) {
-        return (__int128) x * b.y - (__int128) y * b.x;
+    // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
+    // 复杂度 O(n)
+    long long query_monotonic(const Vec& p) {
+        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
+            hull.pop_front();
+        return p.dot(hull.front());
     }
 
-    ll dot(const Vec& b) {
-        return x * b.x + y * b.y;
+    // 二分查询最小值，复杂度 O(nlogn)
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size()-1;
+        while (l < r) {
+            int mid = (l+r)>>1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            else r = mid;
+        }
+        return p.dot(hull[l]);
     }
-
+    bool empty() const { return hull.empty(); }
+    void clear() { hull.clear(); }
 };
 
 void solve() {
@@ -93,21 +123,15 @@ void solve() {
     }
     
     vector<ll> f(n);
-    deque<Vec> q;
-    q.push_back(Vec(b[0], 0));
+    LowerHull q;
+    q.add(Vec(-b[0], 0));
     for (int i = 1; i < n; ++i) {
-        Vec v0(a[i], 1);
-        while (q.size() > 1 && v0.dot(q[0]) >= v0.dot(q[1])) {
-            q.pop_front();
-        }
+        Vec v0(-a[i], 1);
 
-        f[i] = v0.dot(q[0]);
-        Vec v1(b[i], f[i]);
+        f[i] = q.query_monotonic(v0);
+        Vec v1(-b[i], f[i]);
 
-        while (q.size() > 1 && (v1 - q[q.size() - 2]).det(q.back() - q[q.size() - 2]) <= 0) {
-            q.pop_back();
-        }
-        q.push_back(v1);
+        q.add(v1);
     }
 
     cout << f[n - 1] << endl;
