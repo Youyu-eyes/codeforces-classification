@@ -3,98 +3,86 @@ using namespace std;
 
 using ll = long long;
 const int MOD = 1'000'000'007;
-ll inf = LLONG_MAX;
+const int inf = 0x3f3f3f3f;
+const ll ll_inf = 1e18;
 
 struct Vec {
     ll x, y;
-
-    Vec operator-(const Vec& b) {
-        return Vec(x - b.x, y - b.y);
+    Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
+    Vec operator-(const Vec& other) const {
+        return Vec(x - other.x, y - other.y);
     }
-
-    __int128 det(const Vec& b) {
-        return (__int128) x * b.y - (__int128) y * b.x;
+    ll dot(const Vec& other) const {
+        return x * other.x + y * other.y;
     }
-
-    ll dot(const Vec& b) {
-        return x * b.x + y * b.y;
+    ll det(const Vec& other) const {
+        return x * other.y - y * other.x;
     }
-
 };
 
-
-// 向量 v0 单调
-void solve1() {
-    int n; cin >> n;
-    vector<ll> a(n);
-    vector<ll> b(n);
-    for (int i = 0; i < n; ++i) {
-        cin >> a[i];
-    }
-    for (int i = 0; i < n; ++i) {
-        cin >> b[i];
-    }
-    
-    vector<ll> f(n);
-    deque<Vec> q;
-    q.push_back(Vec(b[0], 0));
-    for (int i = 1; i < n; ++i) {
-        Vec v0(a[i], 1);
-        while (q.size() > 1 && v0.dot(q[0]) >= v0.dot(q[1])) {
-            q.pop_front();
+// 上凸包（求最大值）
+struct UpperHull {
+    deque<Vec> hull;
+    void add(const Vec& p) {
+        while (hull.size() > 1) {
+            Vec& back1 = hull.back();
+            Vec& back2 = hull[hull.size()-2];
+            // 维护上凸包：新点使前一个点成为凹点则弹出
+            if ((p - back1).det(back1 - back2) >= 0) hull.pop_back();
+            else break;
         }
-
-        f[i] = v0.dot(q[0]);
-        Vec v1(b[i], f[i]);
-
-        while (q.size() > 1 && (v1 - q[q.size() - 2]).det(q.back() - q[q.size() - 2]) <= 0) {
-            q.pop_back();
-        }
-        q.push_back(v1);
+        hull.push_back(p);
     }
-
-    cout << f[n - 1] << endl;
-}
-
-
-// 向量 v0 不单调，二分下凸包
-void solve() {
-    int n; cin >> n;
-    unordered_map<ll, int> cnt;
-    for (int i = 0; i < n; ++i) {
-        ll x; cin >> x;
-        cnt[x]++;
+    // 单调查询（假设查询向量 p 的斜率单调递增，即 p.x 递增？）
+    // 这里假设 p 的 x 单调递增，对于上凸包，最大值点单调右移
+    long long query_monotonic(const Vec& p) {
+        while (hull.size() > 1 && p.dot(hull[0]) <= p.dot(hull[1]))
+            hull.pop_front();
+        return p.dot(hull.front());
     }
-    ll m = 0;
-    while (cnt[m]) m++;
-    vector<ll> f(m + 1, inf);
-    f[m] = 0;
-
-    deque<Vec> q;  // 不知道为什么，双端队列比 vector 开销小，时间快一点
-    q.push_back(Vec(f[m], m));
-    for (ll i = m - 1; i >= 0; --i) {
-        Vec v0(1, cnt[i]);
-
-        // 二分找最小
-        ll l = 0, r = q.size() - 1;
+    // 二分查询（p 不单调）
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size()-1;
         while (l < r) {
-            ll mid = (l + r) / 2;
-            if (v0.dot(q[mid]) <= v0.dot(q[mid + 1])) {
-                r = mid;
-            } else {
-                l = mid + 1;
-            }
+            int mid = (l+r)>>1;
+            if (p.dot(hull[mid]) <= p.dot(hull[mid+1])) l = mid+1;
+            else r = mid;
         }
-        
-        // 更新答案
-        f[i] = v0.dot(q[l]);
-
-        // 维护下凸包
-        Vec v(f[i], i);
-        while (q.size() > 1 && (q[q.size() - 1] - q[q.size() - 2]).det(v - q[q.size() - 1]) <= 0) {
-            q.pop_back();
-        }
-        q.push_back(v);
+        return p.dot(hull[l]);
     }
-    cout << f[0] - m << endl;
-}
+    bool empty() const { return hull.empty(); }
+    void clear() { hull.clear(); }
+};
+
+// 下凸包（求最小值）
+struct LowerHull {
+    deque<Vec> hull;
+    void add(const Vec& p) {
+        while (hull.size() > 1) {
+            Vec& back1 = hull.back();
+            Vec& back2 = hull[hull.size()-2];
+            // 维护下凸包：新点使前一个点成为凸点？条件相反
+            if ((p - back1).det(back1 - back2) <= 0) hull.pop_back();
+            else break;
+        }
+        hull.push_back(p);
+    }
+    // 单调查询（假设 p 的 x 单调递增，最小值点单调右移）
+    long long query_monotonic(const Vec& p) {
+        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
+            hull.pop_front();
+        return p.dot(hull.front());
+    }
+    // 二分查询最小值
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size()-1;
+        while (l < r) {
+            int mid = (l+r)>>1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            else r = mid;
+        }
+        return p.dot(hull[l]);
+    }
+    bool empty() const { return hull.empty(); }
+    void clear() { hull.clear(); }
+};
