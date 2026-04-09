@@ -139,21 +139,25 @@ def pow_mul(a, n, f0, mod=None):
 
 
 # 预处理阶乘及逆元
-MOD = 10**9 + 7
-MX = 100000
-MAX = 2 * MX
+MOD = 1_000_000_007
+MX = 100_001  # 根据题目数据范围修改
 
-fac = [1] * (MAX + 1)
-for i in range(1, MAX + 1):
+fac = [0] * MX  # fac[i] = i!
+fac[0] = 1
+for i in range(1, MX):
     fac[i] = fac[i - 1] * i % MOD
 
-inv_fac = [1] * (MAX + 1)
-inv_fac[MAX] = pow(fac[MAX], -1, MOD)   # 直接求逆元
-for i in range(MAX, 0, -1):
-    inv_fac[i - 1] = inv_fac[i] * i % MOD
+inv_f = [0] * MX  # inv_f[i] = i!^-1
+inv_f[-1] = pow(fac[-1], -1, MOD)
+for i in range(MX - 1, 0, -1):
+    inv_f[i - 1] = inv_f[i] * i % MOD
+
+# 从 n 个数中选 m 个数的方案数
+def comb(n: int, m: int) -> int:
+    return fac[n] * inv_f[m] * inv_f[n - m] % MOD if 0 <= m <= n else 0
 
 # 卡特兰数
 def catalan(n):
     if n == 0:
         return 1
-    return fac[2 * n] * inv_fac[n] % MOD * inv_fac[n] % MOD * pow(n + 1, -1, MOD) % MOD
+    return comb(2 * n, n) * pow(n + 1, -1, MOD) % MOD
