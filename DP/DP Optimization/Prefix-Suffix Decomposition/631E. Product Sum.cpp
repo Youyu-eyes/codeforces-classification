@@ -53,6 +53,9 @@
 // 但是 best_left[1] = -ll_inf，表示第一个数不能左移，与 0 取最大值为 0，忽略
 // 0LL 表示将数放回原位，则答案就为 sum(a[i] * i) 即我们讨论的 i = j 的情况，表示增量为 0
 
+// 时间复杂度 O(nlogn) 二分凸包
+// 空间复杂度 O(n)
+
 
 #include <bits/stdc++.h>
 using namespace std;
