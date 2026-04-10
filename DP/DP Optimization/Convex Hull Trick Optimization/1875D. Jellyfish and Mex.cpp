@@ -8,11 +8,14 @@
 // 重点：斜率优化（凸包优化）DP
 // 由 f[j] + cnt[i] * j 可知
 // 写成点积形式，可以带来几何意义上的观察
-// => 1 * f[j] + cnt[i] * j
-// => dot((1, cnt[i]), (f[j], j))
+// => cnt[i] * j + 1 * f[j]
+// => dot((cnt[i], 1), (j, f[j]))
 // 转化出一个与 j 无关的向量
 // cnt[i] 不具单调性，无法用单调队列优化，需要在凸包上二分（类似通过导数与 0 的大小，判断下降还是上升）
 // 每次更新完 f[i] 后，用新的 f[i] 构造向量，然后用 类似单调栈（不是单调栈，因为不是根据单调栈来的）维护下凸包
+
+// 由于本题的 i 是倒序枚举的，所以待维护向量 v1.x 单调递减，则两边加负号变成单调递增
+// dot((-cnt[i], 1), (-j, f[j]))
 // 由于没有单调性，需要在凸包上二分，复杂度为 O(mlogm)
 
 #include <bits/stdc++.h>
@@ -24,19 +27,54 @@ ll inf = LLONG_MAX;
 
 struct Vec {
     ll x, y;
+    Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
 
-    Vec operator-(const Vec& b) {
-        return Vec(x - b.x, y - b.y);
+    Vec operator-(const Vec& other) const {
+        return Vec(x - other.x, y - other.y);
     }
 
-    __int128 det(const Vec& b) {
-        return (__int128) x * b.y - (__int128) y * b.x;
+    ll dot(const Vec& other) const {
+        return x * other.x + y * other.y;
     }
 
-    ll dot(const Vec& b) {
-        return x * b.x + y * b.y;
+    // a.det(b) > 0 => a 到 b 逆时针
+    // a.det(b) < 0 => a 到 b 顺时针
+    __int128 det(const Vec& other) const {
+        return (__int128) x * other.y - (__int128) y * other.x;
+    }
+};
+
+// 下凸包（求最小值）
+struct LowerHull {
+    deque<Vec> hull;
+    void add(const Vec& p) {
+        while (hull.size() > 1 && (hull.back() - hull[hull.size() - 2]).det(p - hull.back()) <= 0) {
+            hull.pop_back();
+        }
+
+        hull.push_back(p);
     }
 
+    // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
+    // 复杂度 O(n)
+    long long query_monotonic(const Vec& p) {
+        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
+            hull.pop_front();
+        return p.dot(hull.front());
+    }
+
+    // 二分查询最小值，复杂度 O(nlogn)
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size()-1;
+        while (l < r) {
+            int mid = (l+r)>>1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            else r = mid;
+        }
+        return p.dot(hull[l]);
+    }
+    bool empty() const { return hull.empty(); }
+    void clear() { hull.clear(); }
 };
 
 // 斜率优化DP
@@ -52,31 +90,18 @@ void solve() {
     vector<ll> f(m + 1, inf);
     f[m] = 0;
 
-    deque<Vec> q;  // 不知道为什么，双端队列比 vector 开销小，时间快一点
-    q.push_back(Vec(f[m], m));
+    LowerHull q;
+    q.add(Vec(-m, f[m]));
     for (ll i = m - 1; i >= 0; --i) {
-        Vec v0(1, cnt[i]);
-
-        // 二分找最小
-        ll l = 0, r = q.size() - 1;
-        while (l < r) {
-            ll mid = (l + r) / 2;
-            if (v0.dot(q[mid]) <= v0.dot(q[mid + 1])) {
-                r = mid;
-            } else {
-                l = mid + 1;
-            }
-        }
+        Vec v0(-cnt[i], 1);
         
         // 更新答案
-        f[i] = v0.dot(q[l]);
+        f[i] = q.query_binary(v0);
 
         // 维护下凸包
-        Vec v(f[i], i);
-        while (q.size() > 1 && (q[q.size() - 1] - q[q.size() - 2]).det(v - q[q.size() - 1]) <= 0) {
-            q.pop_back();
-        }
-        q.push_back(v);
+        Vec v(-i, f[i]);
+        
+        q.add(v);
     }
     cout << f[0] - m << endl;
 }
