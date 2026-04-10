@@ -33,21 +33,54 @@ const ll ll_inf = 1e18;
 
 struct Vec {
     ll x, y;
+    Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
 
-    Vec operator-(const Vec& b) {
-        return Vec(x - b.x, y - b.y);
+    Vec operator-(const Vec& other) const {
+        return Vec(x - other.x, y - other.y);
+    }
+
+    ll dot(const Vec& other) const {
+        return x * other.x + y * other.y;
     }
 
     // a.det(b) > 0 => a 到 b 逆时针
     // a.det(b) < 0 => a 到 b 顺时针
-    __int128 det(const Vec& b) {
-        return (__int128) x * b.y - (__int128) y * b.x;
+    __int128 det(const Vec& other) const {
+        return (__int128) x * other.y - (__int128) y * other.x;
+    }
+};
+
+// 下凸包（求最小值）
+struct LowerHull {
+    deque<Vec> hull;
+    void add(const Vec& p) {
+        while (hull.size() > 1 && (hull.back() - hull[hull.size() - 2]).det(p - hull.back()) <= 0) {
+            hull.pop_back();
+        }
+
+        hull.push_back(p);
     }
 
-    ll dot(const Vec& b) {
-        return x * b.x + y * b.y;
+    // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
+    // 复杂度 O(n)
+    long long query_monotonic(const Vec& p) {
+        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
+            hull.pop_front();
+        return p.dot(hull.front());
     }
 
+    // 二分查询最小值，复杂度 O(nlogn)
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size()-1;
+        while (l < r) {
+            int mid = (l+r)>>1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            else r = mid;
+        }
+        return p.dot(hull[l]);
+    }
+    bool empty() const { return hull.empty(); }
+    void clear() { hull.clear(); }
 };
 
 vector<long long> shortestPathDijkstra(int n, vector<long long> dis,
@@ -86,23 +119,18 @@ void solve() {
     dis = shortestPathDijkstra(n, dis, g);
     for (int k = 1; k <= K; ++k) {
         vector<ll> fly = dis;
-        deque<Vec> q;
+        LowerHull q;
 
         // 计算下凸包（从左到右）
         for (int v = 0; v < n; ++v) {
             Vec p(v, dis[v] + 1LL * v * v);
-            while (q.size() > 1 && (p - q.back()).det(q.back() - q[q.size() - 2]) >= 0) {
-                q.pop_back();
-            }
-            q.push_back(p);
+            q.add(p);
         }
 
         for (int v = 0; v < n; ++v) {
             Vec v0(-2 * v, 1);
-            while (q.size() > 1 && v0.dot(q[0]) >= v0.dot(q[1])) {
-                q.pop_front();
-            }
-            fly[v] = v0.dot(q[0]) + 1LL * v * v;
+            ll best = q.query_monotonic(v0);
+            fly[v] = best + 1LL * v * v;
         }
         dis = shortestPathDijkstra(n, fly, g);
     }
