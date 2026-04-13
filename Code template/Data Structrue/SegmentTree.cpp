@@ -13,78 +13,73 @@ class SegmentTree {
     int n;
     vector<T> tree;
 
-    // 合并两个 val
     T merge_val(T a, T b) const {
-        return max(a, b); // **根据题目修改**
+        return max(a, b); // **根据题目修改** 可维护 max(default = -inf), min(default = inf), gcd, +, &(-1), |, ^, ( * ) % MOD(1) 等
     }
 
-    // 合并左右儿子的 val 到当前节点的 val
     void maintain(int node) {
-        tree[node] = merge_val(tree[node * 2], tree[node * 2 + 1]);
+        tree[node] = merge_val(tree[node << 1], tree[node << 1 | 1]);
     }
 
-    // 用 a 初始化线段树
-    // 时间复杂度 O(n)
     void build(const vector<T>& a, int node, int l, int r) {
-        if (l == r) { // 叶子
-            tree[node] = a[l]; // 初始化叶节点的值
+        if (l == r) {
+            tree[node] = a[l];
             return;
         }
-        int m = (l + r) / 2;
-        build(a, node * 2, l, m); // 初始化左子树
-        build(a, node * 2 + 1, m + 1, r); // 初始化右子树
+        int m = (l + r) >> 1;
+        build(a, node << 1, l, m);
+        build(a, node << 1 | 1, m + 1, r);
         maintain(node);
     }
 
     void update(int node, int l, int r, int i, T val) {
-        if (l == r) { // 叶子（到达目标）
-            // 如果想直接替换的话，可以写 tree[node] = val
+        if (l == r) {
             tree[node] = merge_val(tree[node], val);
             return;
         }
-        int m = (l + r) / 2;
-        if (i <= m) { // i 在左子树
-            update(node * 2, l, m, i, val);
-        } else { // i 在右子树
-            update(node * 2 + 1, m + 1, r, i, val);
+        int m = (l + r) >> 1;
+        if (i <= m) {
+            update(node << 1, l, m, i, val);
+        } else {
+            update(node << 1 | 1, m + 1, r, i, val);
         }
         maintain(node);
     }
 
     T query(int node, int l, int r, int ql, int qr) const {
-        if (ql <= l && r <= qr) { // 当前子树完全在 [ql, qr] 内
+        if (ql <= l && r <= qr) {
             return tree[node];
         }
-        int m = (l + r) / 2;
-        if (qr <= m) { // [ql, qr] 在左子树
-            return query(node * 2, l, m, ql, qr);
+        int m = (l + r) >> 1;
+        if (qr <= m) {
+            return query(node << 1, l, m, ql, qr);
         }
-        if (ql > m) { // [ql, qr] 在右子树
-            return query(node * 2 + 1, m + 1, r, ql, qr);
+        if (ql > m) {
+            return query(node << 1 | 1, m + 1, r, ql, qr);
         }
-        T l_res = query(node * 2, l, m, ql, qr);
-        T r_res = query(node * 2 + 1, m + 1, r, ql, qr);
+        T l_res = query(node << 1, l, m, ql, qr);
+        T r_res = query(node << 1 | 1, m + 1, r, ql, qr);
         return merge_val(l_res, r_res);
     }
 
     int _find_first(int node, int l, int r, int ql, int qr, const std::function<bool(const T&)>& f) const {
-        if (r < ql || l > qr) return -1;          // 区间无交集
-        if (!f(tree[node])) return -1;            // 整个区间不满足条件
-        if (l == r) return l;                      // 叶子节点
-        int m = (l + r) / 2;
-        int left_res = _find_first(node*2, l, m, ql, qr, f);
+        if (r < ql || l > qr) return -1;
+        if (!f(tree[node])) return -1;
+        if (l == r) return l;
+        int m = (l + r) >> 1;
+        int left_res = _find_first(node << 1, l, m, ql, qr, f);
         if (left_res != -1) return left_res;
-        return _find_first(node*2+1, m+1, r, ql, qr, f);
+        return _find_first(node << 1 | 1, m + 1, r, ql, qr, f);
     }
 
     int _find_last(int node, int l, int r, int ql, int qr, const std::function<bool(const T&)>& f) const {
         if (r < ql || l > qr) return -1;
         if (!f(tree[node])) return -1;
         if (l == r) return l;
-        int m = (l + r) / 2;
-        int right_res = _find_last(node*2+1, m+1, r, ql, qr, f);
+        int m = (l + r) >> 1;
+        int right_res = _find_last(node << 1 | 1, m + 1, r, ql, qr, f);
         if (right_res != -1) return right_res;
-        return _find_last(node*2, l, m, ql, qr, f);
+        return _find_last(node << 1, l, m, ql, qr, f);
     }
 
 public:
@@ -96,39 +91,32 @@ public:
         build(a, 1, 0, n - 1);
     }
 
-    // 更新 a[i] 为 merge_val(a[i], val)
-    // 时间复杂度 O(log n)
+    // 单点更新
     void update(int i, T val) {
         update(1, 0, n - 1, i, val);
     }
 
-    // 返回用 merge_val 合并所有 a[i] 的计算结果，其中 i 在闭区间 [ql, qr] 中
-    // 时间复杂度 O(log n)
+    // 区间查询 [ql, qr]
     T query(int ql, int qr) const {
         return query(1, 0, n - 1, ql, qr);
     }
 
-    // 获取 a[i] 的值
-    // 时间复杂度 O(log n)
+    // 单点查询
     T get(int i) const {
         return query(1, 0, n - 1, i, i);
     }
 
-    // 返回 [ql, qr] 内第一个满足 f 的下标，如果不存在，返回 -1
-    // 例如查询区间内第一个大于等于 target 的元素下标，需要线段树维护区间最大值
-    //     int idx = seg.find_first(l, r, [&](const T& node_max) { return node_max >= target; });
+    // 返回 [ql, qr] 内 第一个  满足 f 的下标，如果不存在，返回 -1
     int find_first(int ql, int qr, const std::function<bool(const T&)>& f) const {
         return _find_first(1, 0, n-1, ql, qr, f);
     }
 
-    // 返回 [ql, qr] 内最后一个满足 f 的下标，如果不存在，返回 -1
-    // 例如查询区间内最后一个小于等于 target 的元素下标，需要线段树维护区间最小值
-    //     int idx = seg.find_last(l, r, [&](const T& node_min) { return node_min <= target; });
+    // 返回 [ql, qr] 内 最后一个满足 f 的下标，如果不存在，返回 -1
     int find_last(int ql, int qr, const std::function<bool(const T&)>& f) const {
         return _find_last(1, 0, n-1, ql, qr, f);
     }
-
 };
+
 
 // Lazy 线段树
 // 模板来源 https://leetcode.cn/circle/discuss/mOr1u6/
@@ -174,15 +162,15 @@ class LazySegmentTree {
         if (todo == TODO_INIT) { // 没有需要下传的信息
             return;
         }
-        int m = (l + r) / 2;
-        apply(node * 2, l, m, todo);
-        apply(node * 2 + 1, m + 1, r, todo);
+        int m = (l + r) >> 1;
+        apply(node << 1, l, m, todo);
+        apply(node << 1 | 1, m + 1, r, todo);
         cur.todo = TODO_INIT; // 下传完毕
     }
 
     // 合并左右儿子的 val 到当前节点的 val
     void maintain(int node) {
-        tree[node].val = merge_val(tree[node * 2].val, tree[node * 2 + 1].val);
+        tree[node].val = merge_val(tree[node << 1].val, tree[node << 1 | 1].val);
     }
 
     // 用 a 初始化线段树
@@ -194,9 +182,9 @@ class LazySegmentTree {
             cur.val = a[l]; // 初始化叶节点的值
             return;
         }
-        int m = (l + r) / 2;
-        build(a, node * 2, l, m); // 初始化左子树
-        build(a, node * 2 + 1, m + 1, r); // 初始化右子树
+        int m = (l + r) >> 1;
+        build(a, node << 1, l, m); // 初始化左子树
+        build(a, node << 1 | 1, m + 1, r); // 初始化右子树
         maintain(node);
     }
 
@@ -206,12 +194,12 @@ class LazySegmentTree {
             return;
         }
         spread(node, l, r);
-        int m = (l + r) / 2;
+        int m = (l + r) >> 1;
         if (ql <= m) { // 更新左子树
-            update(node * 2, l, m, ql, qr, f);
+            update(node << 1, l, m, ql, qr, f);
         }
         if (qr > m) { // 更新右子树
-            update(node * 2 + 1, m + 1, r, ql, qr, f);
+            update(node << 1 | 1, m + 1, r, ql, qr, f);
         }
         maintain(node);
     }
@@ -221,15 +209,15 @@ class LazySegmentTree {
             return tree[node].val;
         }
         spread(node, l, r);
-        int m = (l + r) / 2;
+        int m = (l + r) >> 1;
         if (qr <= m) { // [ql, qr] 在左子树
-            return query(node * 2, l, m, ql, qr);
+            return query(node << 1, l, m, ql, qr);
         }
         if (ql > m) { // [ql, qr] 在右子树
-            return query(node * 2 + 1, m + 1, r, ql, qr);
+            return query(node << 1 | 1, m + 1, r, ql, qr);
         }
-        T l_res = query(node * 2, l, m, ql, qr);
-        T r_res = query(node * 2 + 1, m + 1, r, ql, qr);
+        T l_res = query(node << 1, l, m, ql, qr);
+        T r_res = query(node << 1 | 1, m + 1, r, ql, qr);
         return merge_val(l_res, r_res);
     }
 
@@ -239,10 +227,10 @@ class LazySegmentTree {
         if (!f(tree[node].val)) return -1;
         if (l == r) return l;
         spread(node, l, r); // 下传懒标记
-        int m = (l + r) / 2;
-        int left_res = _find_first(node*2, l, m, ql, qr, f);
+        int m = (l + r) >> 1;
+        int left_res = _find_first(node << 1, l, m, ql, qr, f);
         if (left_res != -1) return left_res;
-        return _find_first(node*2+1, m+1, r, ql, qr, f);
+        return _find_first(node << 1 | 1, m + 1, r, ql, qr, f);
     }
 
     // 私有递归：查找最后一个满足条件的下标
@@ -251,10 +239,10 @@ class LazySegmentTree {
         if (!f(tree[node].val)) return -1;
         if (l == r) return l;
         spread(node, l, r);
-        int m = (l + r) / 2;
-        int right_res = _find_last(node*2+1, m+1, r, ql, qr, f);
+        int m = (l + r) >> 1;
+        int right_res = _find_last(node << 1 | 1, m + 1, r, ql, qr, f);
         if (right_res != -1) return right_res;
-        return _find_last(node*2, l, m, ql, qr, f);
+        return _find_last(node << 1, l, m, ql, qr, f);
     }
 
 public:

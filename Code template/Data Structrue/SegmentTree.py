@@ -3,122 +3,104 @@ from typing import List, Tuple, Callable
 
 # 线段树
 class SegmentTree:
-    def __init__(self, arr, default = 0):
+    def __init__(self, arr, default = 0) -> None:
         if isinstance(arr, int):
-            n = arr
+            n: int = arr
             arr = [default] * n
         n = len(arr)
-        self._n = n
-        self._tree = [0 for _ in range(2 << (n - 1).bit_length())]
+        self._n: int = n
+        self._tree: List[int] = [0 for _ in range(2 << (n - 1).bit_length())]
         self._build(arr, 1, 0, n - 1)
-    
-    # 合并函数
-    def _merge_val(self, x, y):
-        return max(x, y)    # 根据题目改变
 
-    # 节点合并
-    def _maintain(self, node):
-        self._tree[node] = self._merge_val(self._tree[node * 2], self._tree[node * 2 + 1])
-    
-    # 建树
-    def _build(self, a, node, l, r):
+    def _merge_val(self, x: int, y: int) -> int:
+        return max(x, y)  # **根据题目修改** 可维护 max(default = -inf), min(default = inf), gcd, +, &(-1), |, ^, ( * ) % MOD(1) 等
+
+    def _maintain(self, node: int) -> None:
+        self._tree[node] = self._merge_val(self._tree[node << 1], self._tree[node << 1 | 1])
+
+    def _build(self, a: List[int], node: int, l: int, r: int) -> None:
         if l == r:
             self._tree[node] = a[l]
             return
-        m = (l + r) // 2
-        self._build(a, node * 2, l, m)
-        self._build(a, node * 2 + 1, m + 1, r)
+        m: int = (l + r) >> 1
+        self._build(a, node << 1, l, m)
+        self._build(a, node << 1 | 1, m + 1, r)
         self._maintain(node)
-    
-    # 更新
-    def _update(self, node, l, r, i, x):
+
+    def _update(self, node: int, l: int, r: int, i: int, x: int) -> None:
         if l == r:
             self._tree[node] = x
             return
-        m = (l + r) // 2
+        m: int = (l + r) >> 1
         if i <= m:
-            self._update(node * 2, l, m, i, x)
+            self._update(node << 1, l, m, i, x)
         else:
-            self._update(node * 2 + 1, m + 1, r, i, x)
+            self._update(node << 1 | 1, m + 1, r, i, x)
         self._maintain(node)
-    
-    # 查询
-    def _query(self, node, l, r, ql, qr):
+
+    def _query(self, node: int, l: int, r: int, ql: int, qr: int) -> int:
         if ql <= l and r <= qr:
             return self._tree[node]
-        m = (l + r) // 2
-
-        # 一般是最先出现，如果题目是最后出现的，要先递归右子树
+        m: int = (l + r) >> 1
         if qr <= m:
-            return self._query(node * 2, l, m, ql, qr)
+            return self._query(node << 1, l, m, ql, qr)
         if ql > m:
-            return self._query(node * 2 + 1, m + 1, r, ql, qr)
-        
-        l_res = self._query(node * 2, l, m, ql, qr)
-        r_res = self._query(node * 2 + 1, m + 1, r, ql, qr)
+            return self._query(node << 1 | 1, m + 1, r, ql, qr)
+        l_res: int = self._query(node << 1, l, m, ql, qr)
+        r_res: int = self._query(node << 1 | 1, m + 1, r, ql, qr)
         return self._merge_val(l_res, r_res)
 
-    # 封装函数，减少接口
-    def update(self, i, x):
-        self._update(1, 0, self._n - 1, i, x)
-    
-    def query(self, ql, qr):
-        return self._query(1, 0, self._n - 1, ql, qr)
-    
-    def get(self, i):
-        return self._query(1, 0, self._n - 1, i, i)
-
-    # 返回 [ql, qr] 内第一个满足 f 的下标，如果不存在，返回 -1
-    # 调用时 o=1，l=0，r=self._n-1
-    # 例如查询区间内第一个大于等于 target 的元素下标，需要线段树维护区间最大值
-    #     index = t.find_first(1, 0, n-1, l, r, lambda node_max: node_max >= target)
-    def find_first(self, o: int, l: int, r: int, ql: int, qr: int, f) -> int:
-        # 当前节点区间与查询区间无交集，或者节点值不满足条件，直接返回 -1
-        if r < ql or l > qr or not f(self._tree[o]):
+    def _find_first(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if r < ql or l > qr or not f(self._tree[node]):
             return -1
-        # 叶子节点，返回下标
         if l == r:
             return l
-        m = (l + r) // 2
-        # 优先在左子树找第一个
-        left_res = self.find_first(o * 2, l, m, ql, qr, f)
+        m: int = (l + r) >> 1
+        left_res: int = self._find_first(node << 1, l, m, ql, qr, f)
         if left_res != -1:
             return left_res
-        # 左子树没有，再找右子树
-        return self.find_first(o * 2 + 1, m + 1, r, ql, qr, f)
+        return self._find_first(node << 1 | 1, m + 1, r, ql, qr, f)
 
-    # 返回 [ql, qr] 内最后一个满足 f 的下标，如果不存在，返回 -1
-    # 调用时 o=1，l=0，r=self._n-1
-    # 例如查询区间内最后一个小于等于 target 的元素下标，需要线段树维护区间最小值
-    #     index = t.find_last(1, 0, n-1, l, r, lambda node_min: node_min <= target)
-    def find_last(self, o: int, l: int, r: int, ql: int, qr: int, f) -> int:
-        # 当前节点区间与查询区间无交集，或者节点值不满足条件，直接返回 -1
-        if r < ql or l > qr or not f(self._tree[o]):
+    def _find_last(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if r < ql or l > qr or not f(self._tree[node]):
             return -1
-        # 叶子节点，返回下标
         if l == r:
             return l
-        m = (l + r) // 2
-        # 优先在右子树找最后一个
-        right_res = self.find_last(o * 2 + 1, m + 1, r, ql, qr, f)
+        m: int = (l + r) >> 1
+        right_res: int = self._find_last(node << 1 | 1, m + 1, r, ql, qr, f)
         if right_res != -1:
             return right_res
-        # 右子树没有，再找左子树
-        return self.find_last(o * 2, l, m, ql, qr, f)
+        return self._find_last(node << 1, l, m, ql, qr, f)
 
+    # ---------- 封装函数 ---------- #
+    # 单点更新
+    def update(self, i: int, x: int) -> None:
+        self._update(1, 0, self._n - 1, i, x)
 
-# Lazy 线段树    
+    # 区间查询
+    def query(self, ql: int, qr: int) -> int:
+        return self._query(1, 0, self._n - 1, ql, qr)
+
+    # 单点查询
+    def get(self, i: int) -> int:
+        return self._query(1, 0, self._n - 1, i, i)
+
+    # 返回 [ql, qr] 之间 第一个  满足 f 的数，不存在返回 -1
+    def find_first(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        return self._find_first(1, 0, self._n - 1, ql, qr, f)
+
+    # 返回 [ql, qr] 之间 最后一个满足 f 的数，不存在返回 -1
+    def find_last(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        return self._find_last(1, 0, self._n - 1, ql, qr, f)
+
+# Lazy 线段树
 class Node:
     __slots__ = 'val', 'todo'
 
 class LazySegmentTree:
-    # 懒标记初始值
-    _TODO_INIT = 0  # **根据题目修改**
+    _TODO_INIT = 0   # 懒标记初始值（**根据题目修改**）
 
-    def __init__(self, arr, default=0):
-        # 线段树维护一个长为 n 的数组（下标从 0 到 n-1）
-        # arr 可以是 list 或者 int
-        # 如果 arr 是 int，视作数组大小，默认值为 default
+    def __init__(self, arr, default = 0):
         if isinstance(arr, int):
             arr = [default] * arr
         n = len(arr)
@@ -134,113 +116,104 @@ class LazySegmentTree:
     def _merge_todo(self, a: int, b: int) -> int:
         return a + b  # **根据题目修改**
 
-    # 把懒标记作用到 node 子树（本例为区间加）
+    # 将 todo 作用到节点 node 表示的区间 [l, r]
     def _apply(self, node: int, l: int, r: int, todo: int) -> None:
         cur = self._tree[node]
-        # 计算 tree[node] 区间的整体变化
-        cur.val += todo * (r - l + 1)  # **根据题目修改**
+        cur.val += todo * (r - l + 1)   # **根据题目修改**
         cur.todo = self._merge_todo(todo, cur.todo)
 
-    # 把当前节点的懒标记下传给左右儿子
+    # 下传懒标记
     def _spread(self, node: int, l: int, r: int) -> None:
         todo = self._tree[node].todo
-        if todo == self._TODO_INIT:  # 没有需要下传的信息
+        if todo == self._TODO_INIT:
             return
-        m = (l + r) // 2
+        m = (l + r) >> 1
         self._apply(node << 1, l, m, todo)
         self._apply(node << 1 | 1, m + 1, r, todo)
-        self._tree[node].todo = self._TODO_INIT  # 下传完毕
+        self._tree[node].todo = self._TODO_INIT
 
-    # 合并左右儿子的 val 到当前节点的 val
     def _maintain(self, node: int) -> None:
-        self._tree[node].val = self._merge_val(self._tree[node * 2].val, self._tree[node * 2 + 1].val)
+        self._tree[node].val = self._merge_val(self._tree[node << 1].val, self._tree[node << 1 | 1].val)
 
-    # 用 a 初始化线段树
-    # 时间复杂度 O(n)
     def _build(self, a: List[int], node: int, l: int, r: int) -> None:
         self._tree[node].todo = self._TODO_INIT
-        if l == r:  # 叶子
-            self._tree[node].val = a[l]  # 初始化叶节点的值
+        if l == r:
+            self._tree[node].val = a[l]
             return
-        m = (l + r) // 2
-        self._build(a, node << 1, l, m)  # 初始化左子树
-        self._build(a, node << 1 | 1, m + 1, r)  # 初始化右子树
+        m = (l + r) >> 1
+        self._build(a, node << 1, l, m)
+        self._build(a, node << 1 | 1, m + 1, r)
         self._maintain(node)
 
     def _update(self, node: int, l: int, r: int, ql: int, qr: int, f: int) -> None:
-        if ql <= l and r <= qr:  # 当前子树完全在 [ql, qr] 内
+        if ql <= l and r <= qr:
             self._apply(node, l, r, f)
             return
         self._spread(node, l, r)
-        m = (l + r) // 2
-        if ql <= m:  # 更新左子树
+        m = (l + r) >> 1
+        if ql <= m:
             self._update(node << 1, l, m, ql, qr, f)
-        if qr > m:  # 更新右子树
+        if qr > m:
             self._update(node << 1 | 1, m + 1, r, ql, qr, f)
         self._maintain(node)
 
     def _query(self, node: int, l: int, r: int, ql: int, qr: int) -> int:
-        if ql <= l and r <= qr:  # 当前子树完全在 [ql, qr] 内
+        if ql <= l and r <= qr:
             return self._tree[node].val
         self._spread(node, l, r)
-        m = (l + r) // 2
-        if qr <= m:  # [ql, qr] 在左子树
+        m = (l + r) >> 1
+        if qr <= m:
             return self._query(node << 1, l, m, ql, qr)
-        if ql > m:  # [ql, qr] 在右子树
+        if ql > m:
             return self._query(node << 1 | 1, m + 1, r, ql, qr)
         l_res = self._query(node << 1, l, m, ql, qr)
         r_res = self._query(node << 1 | 1, m + 1, r, ql, qr)
         return self._merge_val(l_res, r_res)
 
-    # 用 f 更新 [ql, qr] 中的每个 a[i]
-    # 0 <= ql <= qr <= n-1
-    # 时间复杂度 O(log n)
+    def _find_first(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if r < ql or l > qr or not f(self._tree[node].val):
+            return -1
+        if l == r:
+            return l
+        self._spread(node, l, r)
+        m = (l + r) >> 1
+        left_res = self._find_first(node << 1, l, m, ql, qr, f)
+        if left_res != -1:
+            return left_res
+        return self._find_first(node << 1 | 1, m + 1, r, ql, qr, f)
+
+    def _find_last(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if r < ql or l > qr or not f(self._tree[node].val):
+            return -1
+        if l == r:
+            return l
+        self._spread(node, l, r)
+        m = (l + r) >> 1
+        right_res = self._find_last(node << 1 | 1, m + 1, r, ql, qr, f)
+        if right_res != -1:
+            return right_res
+        return self._find_last(node << 1, l, m, ql, qr, f)
+
+    # ---------- 封装函数 ----------
+    # 区间更新
     def update(self, ql: int, qr: int, f: int) -> None:
         self._update(1, 0, self._n - 1, ql, qr, f)
 
-    # 返回用 _merge_val 合并所有 a[i] 的计算结果，其中 i 在闭区间 [ql, qr] 中
-    # 0 <= ql <= qr <= n-1
-    # 时间复杂度 O(log n)
+    # 区间查询
     def query(self, ql: int, qr: int) -> int:
         return self._query(1, 0, self._n - 1, ql, qr)
 
-    # 返回 [ql, qr] 内第一个满足 f 的下标，如果不存在，返回 -1
-    # 调用时 node=1, l=0, r=self._n-1
-    # 例如查询区间内第一个大于等于 target 的元素下标，需要线段树维护区间最大值
-    #     index = seg.find_first(1, 0, n-1, l, r, lambda node_max: node_max >= target)
-    def find_first(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
-        # 当前节点区间与查询区间无交集，或者节点值不满足条件，直接返回 -1
-        if r < ql or l > qr or not f(self._tree[node].val):
-            return -1
-        if l == r:  # 叶子节点，返回下标
-            return l
-        self._spread(node, l, r)  # 下传懒标记，保证子节点值正确
-        m = (l + r) // 2
-        # 优先在左子树找第一个
-        left_res = self.find_first(node << 1, l, m, ql, qr, f)
-        if left_res != -1:
-            return left_res
-        # 左子树没有，再找右子树
-        return self.find_first(node << 1 | 1, m + 1, r, ql, qr, f)
+    # 单点查询
+    def get(self, i: int) -> int:
+        return self._query(1, 0, self._n - 1, i, i)
 
-    # 返回 [ql, qr] 内最后一个满足 f 的下标，如果不存在，返回 -1
-    # 调用时 node=1, l=0, r=self._n-1
-    # 例如查询区间内最后一个小于等于 target 的元素下标，需要线段树维护区间最小值
-    #     index = seg.find_last(1, 0, n-1, l, r, lambda node_min: node_min <= target)
-    def find_last(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
-        # 当前节点区间与查询区间无交集，或者节点值不满足条件，直接返回 -1
-        if r < ql or l > qr or not f(self._tree[node].val):
-            return -1
-        if l == r:  # 叶子节点，返回下标
-            return l
-        self._spread(node, l, r)  # 下传懒标记
-        m = (l + r) // 2
-        # 优先在右子树找最后一个
-        right_res = self.find_last(node << 1 | 1, m + 1, r, ql, qr, f)
-        if right_res != -1:
-            return right_res
-        # 右子树没有，再找左子树
-        return self.find_last(node << 1, l, m, ql, qr, f)
+    # 返回 [ql, qr] 之间 第一个  满足 f 的数，不存在返回 -1
+    def find_first(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        return self._find_first(1, 0, self._n - 1, ql, qr, f)
+
+    # 返回 [ql, qr] 之间 最后一个满足 f 的数，不存在返回 -1
+    def find_last(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        return self._find_last(1, 0, self._n - 1, ql, qr, f)
 
 
 # 李超线段树 - max_LichaoSegmentTree
