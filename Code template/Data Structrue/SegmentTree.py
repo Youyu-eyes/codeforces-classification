@@ -5,8 +5,7 @@ from typing import List, Tuple, Callable
 class SegmentTree:
     def __init__(self, arr, default = 0) -> None:
         if isinstance(arr, int):
-            n: int = arr
-            arr = [default] * n
+            arr = [default] * arr
         n = len(arr)
         self._n: int = n
         self._tree: List[int] = [0 for _ in range(2 << (n - 1).bit_length())]
@@ -22,7 +21,7 @@ class SegmentTree:
         if l == r:
             self._tree[node] = a[l]
             return
-        m: int = (l + r) >> 1
+        m = (l + r) >> 1
         self._build(a, node << 1, l, m)
         self._build(a, node << 1 | 1, m + 1, r)
         self._maintain(node)
@@ -31,7 +30,7 @@ class SegmentTree:
         if l == r:
             self._tree[node] = x
             return
-        m: int = (l + r) >> 1
+        m = (l + r) >> 1
         if i <= m:
             self._update(node << 1, l, m, i, x)
         else:
@@ -41,13 +40,13 @@ class SegmentTree:
     def _query(self, node: int, l: int, r: int, ql: int, qr: int) -> int:
         if ql <= l and r <= qr:
             return self._tree[node]
-        m: int = (l + r) >> 1
+        m = (l + r) >> 1
         if qr <= m:
             return self._query(node << 1, l, m, ql, qr)
         if ql > m:
             return self._query(node << 1 | 1, m + 1, r, ql, qr)
-        l_res: int = self._query(node << 1, l, m, ql, qr)
-        r_res: int = self._query(node << 1 | 1, m + 1, r, ql, qr)
+        l_res = self._query(node << 1, l, m, ql, qr)
+        r_res = self._query(node << 1 | 1, m + 1, r, ql, qr)
         return self._merge_val(l_res, r_res)
 
     def _find_first(self, node: int, l: int, r: int, ql: int, qr: int, f: Callable[[int], bool]) -> int:
@@ -55,8 +54,8 @@ class SegmentTree:
             return -1
         if l == r:
             return l
-        m: int = (l + r) >> 1
-        left_res: int = self._find_first(node << 1, l, m, ql, qr, f)
+        m = (l + r) >> 1
+        left_res = self._find_first(node << 1, l, m, ql, qr, f)
         if left_res != -1:
             return left_res
         return self._find_first(node << 1 | 1, m + 1, r, ql, qr, f)
@@ -66,8 +65,8 @@ class SegmentTree:
             return -1
         if l == r:
             return l
-        m: int = (l + r) >> 1
-        right_res: int = self._find_last(node << 1 | 1, m + 1, r, ql, qr, f)
+        m = (l + r) >> 1
+        right_res = self._find_last(node << 1 | 1, m + 1, r, ql, qr, f)
         if right_res != -1:
             return right_res
         return self._find_last(node << 1, l, m, ql, qr, f)
