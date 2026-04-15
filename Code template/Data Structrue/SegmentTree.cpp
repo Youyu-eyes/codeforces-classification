@@ -4,6 +4,10 @@ using namespace std;
 using ll = long long;
 const ll INF = 1e18;
 
+const int MOD = 1'000'000'007;
+const int inf = 0x3f3f3f3f;
+const ll ll_inf = 1e18;
+
 // 线段树
 template<typename T>
 class SegmentTree {
@@ -515,5 +519,115 @@ public:
         Line line = query(1, 0, n, x);
         if (line.id == 0) return INF;
         return line.calc(x);
+    }
+};
+
+
+// 动态开点李超线段树
+class DynamicLiChaoTree {
+private:
+    struct Line {
+        ll k, b;
+        int id;
+        Line() : k(0), b(ll_inf), id(0) {}
+        Line(ll k, ll b, int id = 0) : k(k), b(b), id(id) {}
+        ll calc(int x) const { return k * x + b; }
+    };
+
+    struct Node {
+        int lc, rc;      // 左右孩子下标（-1 表示空）
+        Line line;       // 该节点存储的直线
+        Node() : lc(-1), rc(-1), line() {}
+    };
+
+    int minX, maxX;
+    vector<Node> nodes;   // 节点池
+
+    // 判断 a 在 x 处是否严格优于 b（求最小值）
+    bool better(const Line& a, const Line& b, int x) const {
+        if (a.id == 0) return false;
+        if (b.id == 0) return true;
+        ll va = a.calc(x), vb = b.calc(x);
+        if (va != vb) return va < vb;
+        return a.id < b.id;
+    }
+
+    // 新建节点，返回下标
+    int new_node() {
+        nodes.emplace_back();
+        return nodes.size() - 1;
+    }
+
+    // 在节点 p 对应区间 [l, r] 插入直线 new_line
+    void insert(int p, int l, int r, Line new_line) {
+        if (p == -1) return;
+        Line &old = nodes[p].line;
+        int mid = l + (r - l) / 2;
+
+        bool better_mid = better(new_line, old, mid);
+        if (better_mid) swap(old, new_line);
+        if (l == r) return;
+
+        bool better_left = better(new_line, old, l);
+        bool better_right = better(new_line, old, r);
+
+        if (better_left != better_mid) {
+            if (nodes[p].lc == -1) nodes[p].lc = new_node();
+            insert(nodes[p].lc, l, mid, new_line);
+        } else if (better_right != better_mid) {
+            if (nodes[p].rc == -1) nodes[p].rc = new_node();
+            insert(nodes[p].rc, mid + 1, r, new_line);
+        }
+    }
+
+    // 查询 x 处的最小值
+    ll query(int p, int l, int r, int x) const {
+        if (p == -1) return ll_inf;
+        ll res = (nodes[p].line.id == 0) ? ll_inf : nodes[p].line.calc(x);
+        if (l == r) return res;
+        int mid = l + (r - l) / 2;
+        if (x <= mid) res = min(res, query(nodes[p].lc, l, mid, x));
+        else          res = min(res, query(nodes[p].rc, mid + 1, r, x));
+        return res;
+    }
+
+    // 合并两棵李超树（将 q 合并到 p），返回合并后的根下标
+    int merge(int p, int q, int l, int r) {
+        if (p == -1) return q;
+        if (q == -1) return p;
+        if (l == r) {
+            if (better(nodes[q].line, nodes[p].line, l))
+                nodes[p].line = nodes[q].line;
+            return p;
+        }
+        int mid = l + (r - l) / 2;
+        nodes[p].lc = merge(nodes[p].lc, nodes[q].lc, l, mid);
+        nodes[p].rc = merge(nodes[p].rc, nodes[q].rc, mid + 1, r);
+        if (nodes[q].line.id != 0)
+            insert(p, l, r, nodes[q].line);
+        return p;
+    }
+
+public:
+    int root;   // 根节点下标，初始为 -1（空树）
+
+    DynamicLiChaoTree(int minX, int maxX) : minX(minX), maxX(maxX), root(-1) {}
+
+    // 插入一条直线
+    void insert(ll k, ll b, int id = 0) {
+        if (root == -1) root = new_node();
+        insert(root, minX, maxX, Line(k, b, id));
+    }
+
+    // 查询 x 处的最小值
+    ll query(int x) const {
+        return query(root, minX, maxX, x);
+    }
+
+    // 将另一棵树合并到当前树（other 中的直线会加入当前树）
+    void merge(DynamicLiChaoTree& other) {
+        if (other.root == -1) return;
+        if (root == -1) root = new_node();
+        root = merge(root, other.root, minX, maxX);
     }
 };
