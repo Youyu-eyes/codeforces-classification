@@ -401,13 +401,14 @@ private:
     };
 
     struct Node {
-        int lc, rc;
+        Node* lc;
+        Node* rc;
         Line line;
-        Node() : lc(-1), rc(-1), line() {}
+        Node() : lc(nullptr), rc(nullptr), line() {}
     };
 
     int minX, maxX;
-    vector<Node> nodes;
+    Node* root;
 
     bool better(const Line& a, const Line& b, int x) const {
         if (a.id == 0) return false;
@@ -417,65 +418,68 @@ private:
         return a.id < b.id;
     }
 
-    int new_node() {
-        nodes.emplace_back();
-        return nodes.size() - 1;
+void insert(Node* &p, int l, int r, Line new_line) {
+    if (!p) { 
+        p = new Node(); p->line = new_line;
+        return; 
     }
+    int mid = (l + r) >> 1;
+    bool left_better = better(new_line, p->line, l);
+    bool mid_better = better(new_line, p->line, mid);
 
-    void insert(int p, int l, int r, Line new_line) {
-        if (p == -1) return;
-        Line &old = nodes[p].line;
-        int mid = l + (r - l) / 2;
+    if (mid_better) {
+        swap(p->line, new_line);
 
-        bool better_mid = better(new_line, old, mid);
-        if (better_mid) swap(old, new_line);
-        if (l == r) return;
-
-        bool better_left = better(new_line, old, l);
-        bool better_right = better(new_line, old, r);
-
-        if (better_left != better_mid) {
-            if (nodes[p].lc == -1) nodes[p].lc = new_node();
-            insert(nodes[p].lc, l, mid, new_line);
-        } else if (better_right != better_mid) {
-            if (nodes[p].rc == -1) nodes[p].rc = new_node();
-            insert(nodes[p].rc, mid + 1, r, new_line);
-        }
+        mid_better = better(new_line, p->line, mid);
+        left_better = better(new_line, p->line, l);
     }
+    if (l == r) return;
+    if (left_better != mid_better) {
+        insert(p->lc, l, mid, new_line);
+    } else {
+        insert(p->rc, mid + 1, r, new_line);
+    }
+}
 
-    ll query(int p, int l, int r, int x) const {
-        if (p == -1) return ll_inf;
-        ll res = (nodes[p].line.id == 0) ? ll_inf : nodes[p].line.calc(x);
+    ll query(Node* p, int l, int r, int x) const {
+        if (!p) return ll_inf;
+        ll res = (p->line.id == 0) ? ll_inf : p->line.calc(x);
         if (l == r) return res;
         int mid = l + (r - l) / 2;
-        if (x <= mid) res = min(res, query(nodes[p].lc, l, mid, x));
-        else          res = min(res, query(nodes[p].rc, mid + 1, r, x));
+        if (x <= mid) res = min(res, query(p->lc, l, mid, x));
+        else          res = min(res, query(p->rc, mid + 1, r, x));
         return res;
     }
 
-    int merge(int p, int q, int l, int r) {
-        if (p == -1) return q;
-        if (q == -1) return p;
+    Node* merge(Node* p, Node* q, int l, int r) {
+        if (!p) return q;
+        if (!q) return p;
         if (l == r) {
-            if (better(nodes[q].line, nodes[p].line, l))
-                nodes[p].line = nodes[q].line;
+            if (better(q->line, p->line, l))
+                p->line = q->line;
             return p;
         }
         int mid = l + (r - l) / 2;
-        nodes[p].lc = merge(nodes[p].lc, nodes[q].lc, l, mid);
-        nodes[p].rc = merge(nodes[p].rc, nodes[q].rc, mid + 1, r);
-        if (nodes[q].line.id != 0)
-            insert(p, l, r, nodes[q].line);
+        p->lc = merge(p->lc, q->lc, l, mid);
+        p->rc = merge(p->rc, q->rc, mid + 1, r);
+        if (q->line.id != 0)
+            insert(p, l, r, q->line);
         return p;
     }
 
-public:
-    int root;
+    void clear(Node* p) {
+        if (!p) return;
+        clear(p->lc);
+        clear(p->rc);
+        delete p;
+    }
 
-    DynamicLiChaoTree(int minX, int maxX) : minX(minX), maxX(maxX), root(-1) {}
+public:
+    DynamicLiChaoTree(int minX, int maxX) : minX(minX), maxX(maxX), root(nullptr) {}
+
+    ~DynamicLiChaoTree() { clear(root); }
 
     void insert(ll k, ll b, int id = 0) {
-        if (root == -1) root = new_node();
         insert(root, minX, maxX, Line(k, b, id));
     }
 
@@ -484,8 +488,8 @@ public:
     }
 
     void merge(DynamicLiChaoTree& other) {
-        if (other.root == -1) return;
-        if (root == -1) root = new_node();
+        if (!other.root) return;
         root = merge(root, other.root, minX, maxX);
+        other.root = nullptr;
     }
 };
