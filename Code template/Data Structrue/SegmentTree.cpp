@@ -299,6 +299,348 @@ int main() {
 }
 
 
+// 动态开点线段树
+#include <bits/stdc++.h>
+using namespace std;
+
+// 线段树节点（定义在类外）
+struct SegNode {
+    SegNode* left;
+    SegNode* right;
+    int l, r;
+    long long val;
+
+    SegNode(int l_, int r_, long long val_)
+        : left(nullptr), right(nullptr), l(l_), r(r_), val(val_) {}
+};
+
+class DynamicSegmentTree {
+private:
+    // 空节点哨兵（自环）
+    static SegNode* emptyNode() {
+        static SegNode* empty = [](){
+            SegNode* e = new SegNode(0, 0, 0);
+            e->left = e->right = e;
+            return e;
+        }();
+        return empty;
+    }
+
+    SegNode* root;
+    int minX_, maxX_;
+    long long default_val;  // 默认值（例如求最大值且含负数时传 LLONG_MIN）
+
+    long long merge_val(long long a, long long b) const {
+        return max(a, b);  // 可改为 min, +, gcd 等
+    }
+
+    void maintain(SegNode* o) {
+        o->val = merge_val(o->left->val, o->right->val);
+    }
+
+    void update(SegNode* o, int i, long long val) {
+        if (o->l == o->r) {
+            o->val = merge_val(o->val, val);
+            return;
+        }
+        int m = (o->l + o->r) >> 1;
+        if (i <= m) {
+            if (o->left == emptyNode()) {
+                o->left = new SegNode(o->l, m, default_val);
+                o->left->left = o->left->right = emptyNode();
+            }
+            update(o->left, i, val);
+        } else {
+            if (o->right == emptyNode()) {
+                o->right = new SegNode(m + 1, o->r, default_val);
+                o->right->left = o->right->right = emptyNode();
+            }
+            update(o->right, i, val);
+        }
+        maintain(o);
+    }
+
+    long long query(SegNode* o, int ql, int qr) const {
+        if (o == emptyNode() || ql > o->r || qr < o->l)
+            return default_val;
+        if (ql <= o->l && o->r <= qr)
+            return o->val;
+        return merge_val(query(o->left, ql, qr), query(o->right, ql, qr));
+    }
+
+    int find_first(SegNode* o, int ql, int qr, const function<bool(long long)>& f) const {
+        if (o == emptyNode() || o->r < ql || o->l > qr || !f(o->val))
+            return -1;
+        if (o->l == o->r)
+            return o->l;
+        int left_res = find_first(o->left, ql, qr, f);
+        if (left_res != -1) return left_res;
+        return find_first(o->right, ql, qr, f);
+    }
+
+    int find_last(SegNode* o, int ql, int qr, const function<bool(long long)>& f) const {
+        if (o == emptyNode() || o->r < ql || o->l > qr || !f(o->val))
+            return -1;
+        if (o->l == o->r)
+            return o->l;
+        int right_res = find_last(o->right, ql, qr, f);
+        if (right_res != -1) return right_res;
+        return find_last(o->left, ql, qr, f);
+    }
+
+    SegNode* merge_nodes(SegNode* a, SegNode* b) {
+        if (a == emptyNode()) return b;
+        if (b == emptyNode()) return a;
+        if (a->l == a->r) {
+            a->val = merge_val(a->val, b->val);
+            return a;
+        }
+        a->left = merge_nodes(a->left, b->left);
+        a->right = merge_nodes(a->right, b->right);
+        maintain(a);
+        return a;
+    }
+
+public:
+    DynamicSegmentTree(int minX, int maxX, long long def)
+        : minX_(minX), maxX_(maxX), default_val(def)
+    {
+        emptyNode()->val = def;
+        root = new SegNode(minX, maxX, def);
+        root->left = root->right = emptyNode();
+    }
+
+    // 禁用拷贝（避免浅拷贝问题）
+    DynamicSegmentTree(const DynamicSegmentTree&) = delete;
+    DynamicSegmentTree& operator=(const DynamicSegmentTree&) = delete;
+
+    // 单点更新
+    void update(int i, long long val) {
+        if (i < minX_ || i > maxX_) return;
+        update(root, i, val);
+    }
+
+    // 区间查询
+    long long query(int ql, int qr) const {
+        if (ql > qr || ql > maxX_ || qr < minX_) return default_val;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        return query(root, ql, qr);
+    }
+
+    // 单点查询
+    long long get(int i) const {
+        return query(i, i);
+    }
+
+    // 在 [ql, qr] 中查找第一个满足 f 的位置，不存在返回 -1
+    int find_first(int ql, int qr, const function<bool(long long)>& f) const {
+        if (ql > qr || ql > maxX_ || qr < minX_) return -1;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        return find_first(root, ql, qr, f);
+    }
+
+    // 在 [ql, qr] 中查找最后一个满足 f 的位置，不存在返回 -1
+    int find_last(int ql, int qr, const function<bool(long long)>& f) const {
+        if (ql > qr || ql > maxX_ || qr < minX_) return -1;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        return find_last(root, ql, qr, f);
+    }
+
+    // 线段树合并
+    void merge(DynamicSegmentTree& other) {
+        if (minX_ != other.minX_ || maxX_ != other.maxX_) {
+            throw invalid_argument("值域范围不同，无法合并");
+        }
+        root = merge_nodes(root, other.root);
+    }
+};
+
+
+// 动态开点 Lazy 线段树
+struct LazySegNode {
+    LazySegNode* left;
+    LazySegNode* right;
+    int l, r;
+    long long val;
+    long long todo;
+
+    LazySegNode(int l_, int r_, long long val_, long long todo_)
+        : left(nullptr), right(nullptr), l(l_), r(r_), val(val_), todo(todo_) {}
+};
+
+class DynamicLazySegmentTree {
+private:
+    static LazySegNode* emptyNode() {
+        static LazySegNode* empty = [](){
+            LazySegNode* e = new LazySegNode(0, 0, 0, 0);
+            e->left = e->right = e;
+            return e;
+        }();
+        return empty;
+    }
+
+    LazySegNode* root;
+    int minX_, maxX_;          // 值域范围 [minX, maxX]
+    long long val_default;     // 值默认值（如区间和时为0）
+    long long todo_init;       // 懒标记初始值（如无标记时为0）
+
+    long long merge_val(long long a, long long b) const {
+        return a + b;  // 区间求和；可改为 max, min 等
+    }
+
+    long long merge_todo(long long a, long long b) const {
+        return a + b;  // 懒标记累加；可改为 max, min 等
+    }
+
+    void apply(LazySegNode* o, long long f) {
+        o->val += f * (o->r - o->l + 1);  // ** 根据题目修改 ** //
+        o->todo = merge_todo(o->todo, f);
+    }
+
+    void maintain(LazySegNode* o) {
+        o->val = merge_val(o->left->val, o->right->val);
+    }
+
+    void spread(LazySegNode* o) {
+        if (o->todo == todo_init) return;
+        int m = (o->l + o->r) >> 1;
+        // 动态创建左子节点
+        if (o->left == emptyNode()) {
+            o->left = new LazySegNode(o->l, m, val_default, todo_init);
+            o->left->left = o->left->right = emptyNode();
+        }
+        // 动态创建右子节点
+        if (o->right == emptyNode()) {
+            o->right = new LazySegNode(m + 1, o->r, val_default, todo_init);
+            o->right->left = o->right->right = emptyNode();
+        }
+        long long f = o->todo;
+        apply(o->left, f);
+        apply(o->right, f);
+        o->todo = todo_init;
+    }
+
+    void update(LazySegNode* o, int ql, int qr, long long f) {
+        if (ql <= o->l && o->r <= qr) {
+            apply(o, f);
+            return;
+        }
+        spread(o);
+        int m = (o->l + o->r) >> 1;
+        if (ql <= m) update(o->left, ql, qr, f);
+        if (qr > m)  update(o->right, ql, qr, f);
+        maintain(o);
+    }
+
+    long long query(LazySegNode* o, int ql, int qr) {
+        if (o == emptyNode() || ql > o->r || qr < o->l)
+            return val_default;
+        if (ql <= o->l && o->r <= qr)
+            return o->val;
+        spread(o);
+        return merge_val(query(o->left, ql, qr), query(o->right, ql, qr));
+    }
+
+    int find_first(LazySegNode* o, int ql, int qr, const function<bool(long long)>& f) {
+        if (o == emptyNode() || o->r < ql || o->l > qr || !f(o->val))
+            return -1;
+        if (o->l == o->r)
+            return o->l;
+        spread(o);
+        int left_res = find_first(o->left, ql, qr, f);
+        if (left_res != -1) return left_res;
+        return find_first(o->right, ql, qr, f);
+    }
+
+    int find_last(LazySegNode* o, int ql, int qr, const function<bool(long long)>& f) {
+        if (o == emptyNode() || o->r < ql || o->l > qr || !f(o->val))
+            return -1;
+        if (o->l == o->r)
+            return o->l;
+        spread(o);
+        int right_res = find_last(o->right, ql, qr, f);
+        if (right_res != -1) return right_res;
+        return find_last(o->left, ql, qr, f);
+    }
+
+    LazySegNode* merge_nodes(LazySegNode* a, LazySegNode* b) {
+        if (a == emptyNode()) return b;
+        if (b == emptyNode()) return a;
+        spread(a);
+        spread(b);
+        if (a->l == a->r) {
+            a->val = merge_val(a->val, b->val);
+            return a;
+        }
+        a->left = merge_nodes(a->left, b->left);
+        a->right = merge_nodes(a->right, b->right);
+        maintain(a);
+        return a;
+    }
+
+public:
+    DynamicLazySegmentTree(int minX, int maxX, long long val_def, long long todo_def)
+        : minX_(minX), maxX_(maxX), val_default(val_def), todo_init(todo_def)
+    {
+        emptyNode()->val = val_def;
+        emptyNode()->todo = todo_def;
+        root = new LazySegNode(minX, maxX, val_def, todo_def);
+        root->left = root->right = emptyNode();
+    }
+
+    // 禁用拷贝
+    DynamicLazySegmentTree(const DynamicLazySegmentTree&) = delete;
+    DynamicLazySegmentTree& operator=(const DynamicLazySegmentTree&) = delete;
+
+    // 区间更新
+    void update(int ql, int qr, long long f) {
+        if (ql > qr || ql > maxX_ || qr < minX_) return;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        update(root, ql, qr, f);
+    }
+
+    // 区间查询
+    long long query(int ql, int qr) {
+        if (ql > qr || ql > maxX_ || qr < minX_) return val_default;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        return query(root, ql, qr);
+    }
+
+    // 单点查询
+    long long get(int i) {
+        return query(i, i);
+    }
+
+    // 二分查找第一个满足 f 的位置
+    int find_first(int ql, int qr, const function<bool(long long)>& f) {
+        if (ql > qr || ql > maxX_ || qr < minX_) return -1;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        return find_first(root, ql, qr, f);
+    }
+
+    // 二分查找最后一个满足 f 的位置
+    int find_last(int ql, int qr, const function<bool(long long)>& f) {
+        if (ql > qr || ql > maxX_ || qr < minX_) return -1;
+        ql = max(ql, minX_);
+        qr = min(qr, maxX_);
+        return find_last(root, ql, qr, f);
+    }
+
+    // 线段树合并
+    void merge(DynamicLazySegmentTree& other) {
+        if (minX_ != other.minX_ || maxX_ != other.maxX_)
+            throw invalid_argument("值域范围不同，无法合并");
+        root = merge_nodes(root, other.root);
+    }
+};
+
+
 // 李超线段树
 const double eps = 1e-10;
 
