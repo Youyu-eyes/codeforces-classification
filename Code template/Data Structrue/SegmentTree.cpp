@@ -302,17 +302,17 @@ int main() {
 // 李超线段树
 const double eps = 1e-10;
 
+struct Line {
+    double k, b;
+    int id;
+    Line() : k(0), b(ll_inf), id(0) {}
+    // 最大值：Line() : k(0), b(-ll_inf), id(0) {}
+    Line(double k, double b, int id) : k(k), b(b), id(id) {}
+    double calc(int x) const { return k * x + b; }
+};
+
 class LiChaoSegmentTree {
 private:
-    struct Line {
-        double k, b;
-        int id;
-        Line() : k(0), b(ll_inf), id(0) {}
-        // 最大值：Line() : k(0), b(-ll_inf), id(0) {}
-        Line(double k, double b, int id) : k(k), b(b), id(id) {}
-        double calc(int x) const { return k * x + b; }
-    };
-
     struct Node {
         Line line;
         Node() : line(0, ll_inf, 0) {}
@@ -389,17 +389,20 @@ public:
 };
 
 
-// 动态开点李超线段树
+// 动态开点李超线段树（值域李超线段树）
+const double eps = 1e-10;
+
+struct Line {
+    double k, b;
+    int id;
+    Line() : k(0), b(ll_inf), id(0) {}
+    // 最大值：Line() : k(0), b(-ll_inf), id(0) {}
+    Line(double k, double b, int id) : k(k), b(b), id(id) {}
+    double calc(int x) const { return k * x + b; }
+};
+
 class DynamicLiChaoTree {
 private:
-    struct Line {
-        ll k, b;
-        int id;
-        Line() : k(0), b(ll_inf), id(0) {}
-        Line(ll k, ll b, int id = 0) : k(k), b(b), id(id) {}
-        ll calc(int x) const { return k * x + b; }
-    };
-
     struct Node {
         Node* lc;
         Node* rc;
@@ -413,42 +416,58 @@ private:
     bool better(const Line& a, const Line& b, int x) const {
         if (a.id == 0) return false;
         if (b.id == 0) return true;
-        ll va = a.calc(x), vb = b.calc(x);
-        if (va != vb) return va < vb;
+        double va = a.calc(x), vb = b.calc(x);
+        if (va - vb < -eps) return true;
+        // 最大值：if (va - vb > eps) return true;
+        if (vb - va < -eps) return false;
+        // 最大值：if (vb - va > eps) return false;
         return a.id < b.id;
     }
 
-void insert(Node* &p, int l, int r, Line new_line) {
-    if (!p) { 
-        p = new Node(); p->line = new_line;
-        return; 
-    }
-    int mid = (l + r) >> 1;
-    bool left_better = better(new_line, p->line, l);
-    bool mid_better = better(new_line, p->line, mid);
+    void update(Node* &p, int l, int r, Line new_line) {
+        if (!p) {
+            p = new Node();
+            p->line = new_line;
+            return;
+        }
+        int mid = (l + r) >> 1;
+        bool left_better  = better(new_line, p->line, l);
+        bool mid_better   = better(new_line, p->line, mid);
 
-    if (mid_better) {
-        swap(p->line, new_line);
-
-        mid_better = better(new_line, p->line, mid);
-        left_better = better(new_line, p->line, l);
+        if (mid_better) {
+            swap(p->line, new_line);
+            mid_better  = better(new_line, p->line, mid);
+            left_better = better(new_line, p->line, l);
+        }
+        if (l == r) return;
+        if (left_better != mid_better) {
+            update(p->lc, l, mid, new_line);
+        } else {
+            update(p->rc, mid + 1, r, new_line);
+        }
     }
-    if (l == r) return;
-    if (left_better != mid_better) {
-        insert(p->lc, l, mid, new_line);
-    } else {
-        insert(p->rc, mid + 1, r, new_line);
-    }
-}
 
-    ll query(Node* p, int l, int r, int x) const {
+    void insert_segment(Node* &p, int l, int r, int ql, int qr, const Line& line) {
+        if (!p) p = new Node();
+        if (ql <= l && r <= qr) {
+            update(p, l, r, line);
+            return;
+        }
+        int mid = (l + r) >> 1;
+        if (ql <= mid) insert_segment(p->lc, l, mid, ql, qr, line);
+        if (qr > mid)  insert_segment(p->rc, mid + 1, r, ql, qr, line);
+    }
+
+    double query(Node* p, int l, int r, int x) const {
         if (!p) return ll_inf;
-        ll res = (p->line.id == 0) ? ll_inf : p->line.calc(x);
+        // 最大值：if (!p) return -ll_inf;
+        double res = (p->line.id == 0) ? ll_inf : p->line.calc(x);
+        // 最大值：double res = (p->line.id == 0) ? -ll_inf : p->line.calc(x);
         if (l == r) return res;
-        int mid = l + (r - l) / 2;
-        if (x <= mid) res = min(res, query(p->lc, l, mid, x));
-        else          res = min(res, query(p->rc, mid + 1, r, x));
-        return res;
+        int mid = (l + r) >> 1;
+        if (x <= mid) return min(res, query(p->lc, l, mid, x));
+        else          return min(res, query(p->rc, mid + 1, r, x));
+        // 最大值：return max(res, ...)
     }
 
     Node* merge(Node* p, Node* q, int l, int r) {
@@ -459,11 +478,11 @@ void insert(Node* &p, int l, int r, Line new_line) {
                 p->line = q->line;
             return p;
         }
-        int mid = l + (r - l) / 2;
+        int mid = (l + r) >> 1;
         p->lc = merge(p->lc, q->lc, l, mid);
         p->rc = merge(p->rc, q->rc, mid + 1, r);
         if (q->line.id != 0)
-            insert(p, l, r, q->line);
+            update(p, l, r, q->line);
         return p;
     }
 
@@ -479,11 +498,14 @@ public:
 
     ~DynamicLiChaoTree() { clear(root); }
 
-    void insert(ll k, ll b, int id = 0) {
-        insert(root, minX, maxX, Line(k, b, id));
+    void insert(int l, int r, const Line& line) {
+        if (l > r) return;
+        l = max(l, minX);
+        r = min(r, maxX);
+        if (l <= r) insert_segment(root, minX, maxX, l, r, line);
     }
 
-    ll query(int x) const {
+    double query(int x) const {
         return query(root, minX, maxX, x);
     }
 
@@ -493,3 +515,7 @@ public:
         other.root = nullptr;
     }
 };
+
+// todo
+// https://codeforces.com/problemset/problem/1175/G
+// https://codeforces.com/contest/1303/problem/G
