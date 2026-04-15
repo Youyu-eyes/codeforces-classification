@@ -405,6 +405,7 @@ class DynamicLiChaoTree:
             p = self._update(p, l, r, q.line)
         return p
 
+    # ---------- 封装函数 ---------- #
     def insert(self, l, r, line):
         if l > r:
             return
