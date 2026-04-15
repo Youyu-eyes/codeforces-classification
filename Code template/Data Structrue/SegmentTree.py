@@ -92,6 +92,7 @@ class SegmentTree:
     def find_last(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
         return self._find_last(1, 0, self._n - 1, ql, qr, f)
 
+
 # Lazy 线段树
 class Node:
     __slots__ = 'val', 'todo'
