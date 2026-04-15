@@ -2,8 +2,6 @@
 using namespace std;
 
 using ll = long long;
-const ll INF = 1e18;
-
 const int MOD = 1'000'000'007;
 const int inf = 0x3f3f3f3f;
 const ll ll_inf = 1e18;
@@ -301,223 +299,91 @@ int main() {
 }
 
 
-// 李超线段树 - max_LichaoSegmentTree
+// 李超线段树
 const double eps = 1e-10;
-const long long INF = 1e18;
-
-struct Line {
-    double k, b;
-    int id;
-    
-    Line() : k(0), b(-INF), id(0) {}
-    Line(double k, double b, int id) : k(k), b(b), id(id) {}
-    
-    double calc(int x) const {
-        return k * x + b;
-    }
-};
 
 class LiChaoSegmentTree {
 private:
+    struct Line {
+        double k, b;
+        int id;
+        Line() : k(0), b(ll_inf), id(0) {}
+        // 最大值：Line() : k(0), b(-ll_inf), id(0) {}
+        Line(double k, double b, int id) : k(k), b(b), id(id) {}
+        double calc(int x) const { return k * x + b; }
+    };
+
     struct Node {
         Line line;
-        Node() : line(0, -INF, 0) {}
+        Node() : line(0, ll_inf, 0) {}
+        // 最大值：Node() : line(0, -ll_inf, 0) {}
     };
-    
+
     int n;
     vector<Node> tree;
 
     Line better(const Line& a, const Line& b, int x) const {
         if (a.id == 0) return b;
         if (b.id == 0) return a;
-        
-        double va = a.calc(x);
-        double vb = b.calc(x);
-        
-        if (va - vb > eps) return a;
-        if (vb - va > eps) return b;
-        return a.id < b.id ? a : b;
-    }
-    
-    void update(int node, int l, int r, Line new_line) {
-        if (l > r) return;
-        
-        Line old_line = tree[node].line;
-        
-        int mid = (l + r) / 2;
-
-        bool better_at_mid = new_line.calc(mid) > old_line.calc(mid) + eps;
-        
-        if (better_at_mid) {
-            swap(tree[node].line, new_line);
-        }
-        
-        if (l == r) return;
-        
-        bool better_at_left = new_line.calc(l) > old_line.calc(l) + eps;
-        bool better_at_right = new_line.calc(r) > old_line.calc(r) + eps;
-        
-        if (better_at_left != better_at_mid) {
-            update(node * 2, l, mid, new_line);
-        } else if (better_at_right != better_at_mid) {
-            update(node * 2 + 1, mid + 1, r, new_line);
-        }
-    }
-    
-    void insert_line(int node, int l, int r, int ql, int qr, const Line& line) {
-        if (l > qr || r < ql) return;
-        
-        if (ql <= l && r <= qr) {
-            update(node, l, r, line);
-            return;
-        }
-        
-        int mid = (l + r) / 2;
-        insert_line(node * 2, l, mid, ql, qr, line);
-        insert_line(node * 2 + 1, mid + 1, r, ql, qr, line);
-    }
-    
-    Line query(int node, int l, int r, int x) {
-        if (l == r) {
-            return tree[node].line;
-        }
-        
-        int mid = (l + r) / 2;
-        Line res = tree[node].line;
-        
-        Line child_res;
-        if (x <= mid) {
-            child_res = query(node * 2, l, mid, x);
-        } else {
-            child_res = query(node * 2 + 1, mid + 1, r, x);
-        }
-        
-        return better(res, child_res, x);
-    }
-    
-public:
-    LiChaoSegmentTree(int range) : n(range) {
-        tree.resize(4 * (n + 1));
-    }
-    
-    void insert(int l, int r, const Line& line) {
-        insert_line(1, 0, n, l, r, line);
-    }
-    
-    double query(int x) {
-        Line line = query(1, 0, n, x);
-        if (line.id == 0) return -INF;
-        return line.calc(x);
-    }
-};
-
-
-// 李超线段树 - min_LichaoSegmentTree
-const double eps = 1e-10;
-const long long INF = 1e18;
-
-struct Line {
-    double k, b;
-    int id;
-    
-    Line() : k(0), b(INF), id(0) {}
-    Line(double k, double b, int id) : k(k), b(b), id(id) {}
-    
-    double calc(int x) const {
-        return k * x + b;
-    }
-};
-
-class LiChaoSegmentTree {
-private:
-    struct Node {
-        Line line;
-        Node() : line(0, INF, 0) {}
-    };
-    
-    int n;
-    vector<Node> tree;
-
-    Line better(const Line& a, const Line& b, int x) const {
-        if (a.id == 0) return b;
-        if (b.id == 0) return a;
-        
-        double va = a.calc(x);
-        double vb = b.calc(x);
-        
+        double va = a.calc(x), vb = b.calc(x);
         if (va - vb < -eps) return a;
+        // 最大值：if (va - vb > eps) return a;
         if (vb - va < -eps) return b;
+        // 最大值：if (vb - va > eps) return b;
         return a.id < b.id ? a : b;
     }
-    
+
     void update(int node, int l, int r, Line new_line) {
         if (l > r) return;
-        
         Line old_line = tree[node].line;
-
-        int mid = (l + r) / 2;
-  
+        int mid = (l + r) >> 1;
         bool better_at_mid = new_line.calc(mid) < old_line.calc(mid) - eps;
-        
-        if (better_at_mid) {
-            swap(tree[node].line, new_line);
-        }
-
+        // 最大值：bool better_at_mid = new_line.calc(mid) > old_line.calc(mid) + eps;
+        if (better_at_mid) swap(tree[node].line, new_line);
         if (l == r) return;
-        
         bool better_at_left = new_line.calc(l) < old_line.calc(l) - eps;
+        // 最大值：bool better_at_left = new_line.calc(l) > old_line.calc(l) + eps;
         bool better_at_right = new_line.calc(r) < old_line.calc(r) - eps;
-        
-        if (better_at_left != better_at_mid) {
-            update(node * 2, l, mid, new_line);
-        } else if (better_at_right != better_at_mid) {
-            update(node * 2 + 1, mid + 1, r, new_line);
-        }
+        // 最大值：bool better_at_right = new_line.calc(r) > old_line.calc(r) + eps;
+        if (better_at_left != better_at_mid)
+            update(node << 1, l, mid, new_line);
+        else if (better_at_right != better_at_mid)
+            update(node << 1 | 1, mid + 1, r, new_line);
     }
-    
+
     void insert_line(int node, int l, int r, int ql, int qr, const Line& line) {
         if (l > qr || r < ql) return;
-        
         if (ql <= l && r <= qr) {
             update(node, l, r, line);
             return;
         }
-        
-        int mid = (l + r) / 2;
-        insert_line(node * 2, l, mid, ql, qr, line);
-        insert_line(node * 2 + 1, mid + 1, r, ql, qr, line);
+        int mid = (l + r) >> 1;
+        insert_line(node << 1, l, mid, ql, qr, line);
+        insert_line(node << 1 | 1, mid + 1, r, ql, qr, line);
     }
-    
+
     Line query(int node, int l, int r, int x) {
-        if (l == r) {
-            return tree[node].line;
-        }
-        
-        int mid = (l + r) / 2;
+        if (l == r) return tree[node].line;
+        int mid = (l + r) >> 1;
         Line res = tree[node].line;
-        
-        Line child_res;
-        if (x <= mid) {
-            child_res = query(node * 2, l, mid, x);
-        } else {
-            child_res = query(node * 2 + 1, mid + 1, r, x);
-        }
-        
+        Line child_res = (x <= mid) ? query(node << 1, l, mid, x)
+                                    : query(node << 1 | 1, mid + 1, r, x);
         return better(res, child_res, x);
     }
-    
+
 public:
     LiChaoSegmentTree(int range) : n(range) {
         tree.resize(4 * (n + 1));
     }
-    
+
     void insert(int l, int r, const Line& line) {
         insert_line(1, 0, n, l, r, line);
     }
-    
+
     double query(int x) {
         Line line = query(1, 0, n, x);
-        if (line.id == 0) return INF;
+        if (line.id == 0) return ll_inf;
+        // 最大值：if (line.id == 0) return -ll_inf;
         return line.calc(x);
     }
 };
