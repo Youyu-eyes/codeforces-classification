@@ -215,6 +215,330 @@ class LazySegmentTree:
         return self._find_last(1, 0, self._n - 1, ql, qr, f)
 
 
+# 动态开点线段树
+class _Node:
+    __slots__ = ('left', 'right', 'l', 'r', 'val')
+    
+    def __init__(self, l: int, r: int, val: int):
+        self.left = None
+        self.right = None
+        self.l = l
+        self.r = r
+        self.val = val
+
+
+class DynamicSegmentTree:
+    _EMPTY = None
+    
+    @classmethod
+    def _get_empty(cls):
+        if cls._EMPTY is None:
+            cls._EMPTY = _Node(0, 0, 0)
+            cls._EMPTY.left = cls._EMPTY
+            cls._EMPTY.right = cls._EMPTY
+        return cls._EMPTY
+    
+    def __init__(self, l: int, r: int, default: int = 0):
+        self.l = l
+        self.r = r
+        self.default = default
+        empty = self._get_empty()
+        empty.val = default
+        self.root = _Node(l, r, default)
+        self.root.left = empty
+        self.root.right = empty
+    
+    # ---------- 内部递归实现 ---------- #
+    def _merge_val(self, a: int, b: int) -> int:
+        return max(a, b)  # 可改为 min, +, gcd 等，相应调整 default
+    
+    def _maintain(self, node: _Node) -> None:
+        if node.left is None or node.right is None:
+            return
+        node.val = self._merge_val(node.left.val, node.right.val)
+    
+    def _merge_nodes(self, a: _Node, b: _Node) -> _Node:
+        if a is self._get_empty():
+            return b
+        if b is self._get_empty():
+            return a
+        if a.l == a.r:
+            a.val = self._merge_val(a.val, b.val)
+            return a
+        a.left = self._merge_nodes(a.left, b.left)
+        a.right = self._merge_nodes(a.right, b.right)
+        self._maintain(a)
+        return a
+    
+    def _update(self, node: _Node, i: int, val: int) -> None:
+        if node.l == node.r:
+            node.val = self._merge_val(node.val, val)
+            return
+        m = (node.l + node.r) >> 1
+        if i <= m:
+            if node.left is self._get_empty():
+                node.left = _Node(node.l, m, self.default)
+                node.left.left = node.left.right = self._get_empty()
+            self._update(node.left, i, val)
+        else:
+            if node.right is self._get_empty():
+                node.right = _Node(m + 1, node.r, self.default)
+                node.right.left = node.right.right = self._get_empty()
+            self._update(node.right, i, val)
+        self._maintain(node)
+    
+    def _query(self, node: _Node, ql: int, qr: int) -> int:
+        if node is self._get_empty() or ql > node.r or qr < node.l:
+            return self.default
+        if ql <= node.l and node.r <= qr:
+            return node.val
+        return self._merge_val(
+            self._query(node.left, ql, qr),
+            self._query(node.right, ql, qr)
+        )
+    
+    def _find_first(self, node: _Node, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if node is self._get_empty():
+            return -1
+        if node.r < ql or node.l > qr or not f(node.val):
+            return -1
+        if node.l == node.r:
+            return node.l
+        res = self._find_first(node.left, ql, qr, f)
+        if res != -1:
+            return res
+        return self._find_first(node.right, ql, qr, f)
+    
+    def _find_last(self, node: _Node, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if node is self._get_empty():
+            return -1
+        if node.r < ql or node.l > qr or not f(node.val):
+            return -1
+        if node.l == node.r:
+            return node.l
+        res = self._find_last(node.right, ql, qr, f)
+        if res != -1:
+            return res
+        return self._find_last(node.left, ql, qr, f)
+    
+    # ---------- 对外接口 ---------- #
+    # 单点更新
+    def update(self, i: int, val: int) -> None:
+        if not (self.l <= i <= self.r):
+            raise IndexError(f"Index {i} out of range [{self.l}, {self.r}]")
+        self._update(self.root, i, val)
+    
+    # 区间查询
+    def query(self, ql: int, qr: int) -> int:
+        if ql > qr or ql > self.r or qr < self.l:
+            return self.default
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        return self._query(self.root, ql, qr)
+    
+    # 单点查询
+    def get(self, i: int) -> int:
+        return self.query(i, i)
+    
+    # 返回 [ql, qr] 之间 第一个  满足 f 的数，不存在返回 -1
+    def find_first(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if ql > qr or ql > self.r or qr < self.l:
+            return -1
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        return self._find_first(self.root, ql, qr, f)
+    
+    # 返回 [ql, qr] 之间 最后一个满足 f 的数，不存在返回 -1
+    def find_last(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if ql > qr or ql > self.r or qr < self.l:
+            return -1
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        return self._find_last(self.root, ql, qr, f)
+    
+    # 线段树合并
+    def merge(self, other: 'DynamicSegmentTree') -> None:
+        if self.l != other.l or self.r != other.r:
+            raise ValueError("值域范围不同，无法合并")
+        self.root = self._merge_nodes(self.root, other.root)
+
+
+# 动态开点 Lazy 线段树
+class _LazyNode:
+    __slots__ = ('left', 'right', 'l', 'r', 'val', 'todo')
+    
+    def __init__(self, l: int, r: int, val: int, todo: int):
+        self.left = None
+        self.right = None
+        self.l = l
+        self.r = r
+        self.val = val
+        self.todo = todo
+
+
+class DynamicLazySegmentTree:
+    _EMPTY = None
+    
+    @classmethod
+    def _get_empty(cls):
+        if cls._EMPTY is None:
+            cls._EMPTY = _LazyNode(0, 0, 0, 0)
+            cls._EMPTY.left = cls._EMPTY
+            cls._EMPTY.right = cls._EMPTY
+        return cls._EMPTY
+    
+    def __init__(self, l: int, r: int, val_default: int = 0, todo_init: int = 0):
+        self.l = l
+        self.r = r
+        self.val_default = val_default
+        self.todo_init = todo_init
+        empty = self._get_empty()
+        empty.val = val_default
+        empty.todo = todo_init
+        self.root = _LazyNode(l, r, val_default, todo_init)
+        self.root.left = empty
+        self.root.right = empty
+    
+    # ---------- 内部递归实现 ---------- #
+    def _merge_val(self, a: int, b: int) -> int:
+        return a + b  # 可改为 max, min 等，相应调整 val_default
+    
+    def _merge_todo(self, a: int, b: int) -> int:
+        return a + b  # 可改为 max, min 等
+
+    def _apply(self, node: _LazyNode, f: int) -> None:
+        node.val += f * (node.r - node.l + 1)  # 区间和增加 f * 区间长度
+        node.todo = self._merge_todo(node.todo, f)
+    
+    def _maintain(self, node: _LazyNode) -> None:
+        node.val = self._merge_val(node.left.val, node.right.val)
+    
+    def _spread(self, node: _LazyNode) -> None:
+        if node.todo == self.todo_init:
+            return
+        m = (node.l + node.r) >> 1
+        if node.left is self._get_empty():
+            node.left = _LazyNode(node.l, m, self.val_default, self.todo_init)
+            node.left.left = node.left.right = self._get_empty()
+        if node.right is self._get_empty():
+            node.right = _LazyNode(m + 1, node.r, self.val_default, self.todo_init)
+            node.right.left = node.right.right = self._get_empty()
+        f = node.todo
+        self._apply(node.left, f)
+        self._apply(node.right, f)
+        node.todo = self.todo_init
+
+    def _update(self, node: _LazyNode, ql: int, qr: int, f: int) -> None:
+        if ql <= node.l and node.r <= qr:
+            self._apply(node, f)
+            return
+        self._spread(node)
+        m = (node.l + node.r) >> 1
+        if ql <= m:
+            self._update(node.left, ql, qr, f)
+        if qr > m:
+            self._update(node.right, ql, qr, f)
+        self._maintain(node)
+
+    def _query(self, node: _LazyNode, ql: int, qr: int) -> int:
+        if node is self._get_empty() or ql > node.r or qr < node.l:
+            return self.val_default
+        if ql <= node.l and node.r <= qr:
+            return node.val
+        self._spread(node)
+        return self._merge_val(
+            self._query(node.left, ql, qr),
+            self._query(node.right, ql, qr)
+        )
+
+    def _find_first(self, node: _LazyNode, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if node is self._get_empty():
+            return -1
+        if node.r < ql or node.l > qr or not f(node.val):
+            return -1
+        if node.l == node.r:
+            return node.l
+        self._spread(node)
+        res = self._find_first(node.left, ql, qr, f)
+        if res != -1:
+            return res
+        return self._find_first(node.right, ql, qr, f)
+    
+    def _find_last(self, node: _LazyNode, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if node is self._get_empty():
+            return -1
+        if node.r < ql or node.l > qr or not f(node.val):
+            return -1
+        if node.l == node.r:
+            return node.l
+        self._spread(node)
+        res = self._find_last(node.right, ql, qr, f)
+        if res != -1:
+            return res
+        return self._find_last(node.left, ql, qr, f)
+    
+    def _merge_nodes(self, a: _LazyNode, b: _LazyNode) -> _LazyNode:
+        if a is self._get_empty():
+            return b
+        if b is self._get_empty():
+            return a
+
+        self._spread(a)
+        self._spread(b)
+
+        if a.l == a.r:
+            a.val = self._merge_val(a.val, b.val)
+            return a
+
+        a.left = self._merge_nodes(a.left, b.left)
+        a.right = self._merge_nodes(a.right, b.right)
+        self._maintain(a)
+        return a
+    
+    # ---------- 对外接口 ---------- #
+    # 区间更新
+    def update(self, ql: int, qr: int, f: int) -> None:
+        if ql > qr or ql > self.r or qr < self.l:
+            return
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        self._update(self.root, ql, qr, f)
+    
+    # 区间查询
+    def query(self, ql: int, qr: int) -> int:
+        if ql > qr or ql > self.r or qr < self.l:
+            return self.val_default
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        return self._query(self.root, ql, qr)
+    
+    # 单点查询
+    def get(self, i: int) -> int:
+        return self.query(i, i)
+    
+    # 返回 [ql, qr] 之间 第一个  满足 f 的数，不存在返回 -1
+    def find_first(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if ql > qr or ql > self.r or qr < self.l:
+            return -1
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        return self._find_first(self.root, ql, qr, f)
+    
+    # 返回 [ql, qr] 之间 最后一个满足 f 的数，不存在返回 -1
+    def find_last(self, ql: int, qr: int, f: Callable[[int], bool]) -> int:
+        if ql > qr or ql > self.r or qr < self.l:
+            return -1
+        ql = max(ql, self.l)
+        qr = min(qr, self.r)
+        return self._find_last(self.root, ql, qr, f)
+
+    # 合并 Lazy 线段树
+    def merge(self, other: 'DynamicLazySegmentTree') -> None:
+        if self.l != other.l or self.r != other.r:
+            raise ValueError("值域范围不同，无法合并")
+        self.root = self._merge_nodes(self.root, other.root)
+
+
 # 李超线段树
 eps = 1e-10
 
