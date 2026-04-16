@@ -37,4 +37,22 @@ public:
         }
         return pre(r) - pre(l - 1);
     }
+
+    // 返回满足前缀和 >= k 的最小下标（1-based）
+    // 假设 1 <= k <= 总元素个数，且序列元素非负
+    int find_kth(int k) const {
+        int pos = 0;
+        int n = tree.size() - 1;
+        int bit_mask = 1 << (bit_width((unsigned)n) - 1);
+        T s = 0;
+        while (bit_mask) {
+            int nxt = pos + bit_mask;
+            if (nxt <= n and s + tree[nxt] < k) {
+                pos = nxt;
+                s += tree[nxt];
+            }
+            bit_mask >>= 1;
+        }
+        return pos + 1;
+    }
 };

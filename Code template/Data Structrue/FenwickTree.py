@@ -29,3 +29,20 @@ class FenwickTree:
         if r < l:
             return 0
         return self.pre(r) - self.pre(l - 1)
+    
+    # 返回满足前缀和 >= k 的最小下标（1-based）
+    # 假设 1 <= k <= 总元素个数，且序列元素非负
+    def find_kth(self, k: int) -> int:
+        pos = 0
+        t = self.tree
+        n = len(t) - 1
+        bit_mask = 1 << (n.bit_length() - 1)
+        s = 0
+        
+        while bit_mask:
+            nxt = pos + bit_mask
+            if nxt <= n and s + t[nxt] < k:
+                pos = nxt
+                s += t[nxt]
+            bit_mask >>= 1
+        return pos + 1
