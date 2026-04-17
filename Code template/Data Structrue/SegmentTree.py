@@ -28,7 +28,7 @@ class SegmentTree:
 
     def _update(self, node: int, l: int, r: int, i: int, x: int) -> None:
         if l == r:
-            self._tree[node] = x
+            self._tree[node] = self._merge_val(self._tree[node], x)  # 如果想直接覆盖就改成 tree[node] = x
             return
         m = (l + r) >> 1
         if i <= m:
@@ -72,7 +72,7 @@ class SegmentTree:
         return self._find_last(node << 1, l, m, ql, qr, f)
 
     # ---------- 封装函数 ---------- #
-    # 单点更新
+    # 单点更新 将 tree[node] 改成 merge_val(tree[node], val)，需要直接覆盖要修改私有函数
     def update(self, i: int, x: int) -> None:
         self._update(1, 0, self._n - 1, i, x)
 

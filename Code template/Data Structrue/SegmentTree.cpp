@@ -36,7 +36,7 @@ class SegmentTree {
 
     void update(int node, int l, int r, int i, T val) {
         if (l == r) {
-            tree[node] = merge_val(tree[node], val);
+            tree[node] = merge_val(tree[node], val);  // 如果想直接覆盖就改成 tree[node] = val;
             return;
         }
         int m = (l + r) >> 1;
@@ -93,7 +93,7 @@ public:
         build(a, 1, 0, n - 1);
     }
 
-    // 单点更新
+    // 单点更新 将 tree[node] 改成 merge_val(tree[node], val)，需要直接覆盖要修改私有函数
     void update(int i, T val) {
         update(1, 0, n - 1, i, val);
     }
