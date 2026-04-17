@@ -32,7 +32,7 @@ class FenwickTree:
     
     # 返回满足前缀和 >= k 的最小下标（1-based）
     # 假设 1 <= k <= 总元素个数，且序列元素非负
-    def find_kth(self, k: int) -> int:
+    def lower_bound(self, k: int) -> int:
         pos = 0
         t = self.tree
         n = len(t) - 1

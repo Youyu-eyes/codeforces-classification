@@ -40,7 +40,7 @@ public:
 
     // 返回满足前缀和 >= k 的最小下标（1-based）
     // 假设 1 <= k <= 总元素个数，且序列元素非负
-    int find_kth(int k) const {
+    int lower_bound(int k) const {
         int pos = 0;
         int n = tree.size() - 1;
         int bit_mask = 1 << (bit_width((unsigned)n) - 1);
