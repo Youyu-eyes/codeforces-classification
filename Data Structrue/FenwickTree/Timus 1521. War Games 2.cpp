@@ -1,3 +1,9 @@
+// https://acm.timus.ru/problem.aspx?space=1&num=1521
+// 经典题，约瑟夫环
+
+// 树状数组二分
+// 线段树做法见线段树题单
+
 #include <bits/stdc++.h>
 using namespace std;
 
