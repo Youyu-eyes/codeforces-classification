@@ -25,7 +25,8 @@ long long digitDP(long long low, long long high, int target) {
         if (!limit_low && !limit_high && memo[i][cnt0] >= 0) {
             return memo[i][cnt0];
         }
-
+        
+        // 不动产！！！
         int lo = limit_low && i >= diff_lh ? low_s[i - diff_lh] - '0' : 0;
         int hi = limit_high ? high_s[i] - '0' : 9;  // 二进制填 1
 
@@ -78,6 +79,7 @@ long long digitDPContribution(long long low, long long high, int k) {
             return memo[i][mask];
         }
 
+        // 不动产！！！
         int lo = limit_low && i >= diff_lh ? low_s[i - diff_lh] - '0' : 0;
         int hi = limit_high ? high_s[i] - '0' : 9;
 

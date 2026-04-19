@@ -20,6 +20,7 @@ def digitDP(low: int, high: int, target: int) -> int:
         if i == n:
             return 1 if cnt0 == target else 0
 
+        # 不动产！！！
         lo = low_s[i - diff_lh] if limit_low and i >= diff_lh else 0
         hi = high_s[i] if limit_high else 9  # 二进制填 1
 
@@ -59,6 +60,7 @@ def digitDPContribution(low: int, high: int, k: int) -> int:
             # 如果没有特殊约束，那么能递归到终点的都是合法数字
             return 1, 0
 
+        # 不动产！！！
         lo = low_s[i - diff_lh] if limit_low and i >= diff_lh else 0
         hi = high_s[i] if limit_high else 9
 
