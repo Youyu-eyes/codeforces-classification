@@ -40,7 +40,6 @@ struct UpperHull {
         hull.push_back(p);
     }
 
-    // 单调查询，这里假设 p 的 x 单调递增，最大值点单调右移
     // 复杂度 O(n)
     long long query_monotonic(const Vec& p) {
         while (hull.size() > 1 && p.dot(hull[0]) <= p.dot(hull[1]))
@@ -73,7 +72,6 @@ struct LowerHull {
         hull.push_back(p);
     }
 
-    // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
     // 复杂度 O(n)
     long long query_monotonic(const Vec& p) {
         while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
