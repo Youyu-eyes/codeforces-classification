@@ -153,8 +153,11 @@ class LazySegmentTree {
     // 把懒标记作用到 node 子树（本例为区间加）
     void apply(int node, int l, int r, F todo) {
         Node& cur = tree[node];
+
         // 计算 tree[node] 区间的整体变化
+        // 如果是 max or min 写成 cur.val += todo;
         cur.val += todo * (r - l + 1); // **根据题目修改**
+
         cur.todo = merge_todo(todo, cur.todo);
     }
 
