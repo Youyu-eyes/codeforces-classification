@@ -87,21 +87,18 @@ struct LowerHull {
     }
 
     // 保证 v0.x 单调
-    // 如果 v0.x 单调递增，则 UpperHull.query_monotonic(v0,  1)
-    // 如果 v0.x 单调递减，则 UpperHull.query_monotonic(v0, -1)
+    // 如果 v0.x 单调递增，则 LowerHull.query_monotonic(v0,  1)
+    // 如果 v0.x 单调递减，则 LowerHull.query_monotonic(v0, -1)
     // 复杂度 O(n)
     long long query_monotonic(const Vec& p, int dir) {
-        long long n = hull.size();
         if (dir < 0) {
-            while (n > 1 && p.dot(hull[0]) >= p.dot(hull[1])) {
+            while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1])) {
                 hull.pop_front();
             }
             return p.dot(hull.front());
-        }
-        
-        else {
-            while (n > 1 && p.dot(hull.back()) >= p.dot(hull[n - 2])) {
-                hull.pop_front();
+        } else {
+            while (hull.size() > 1 && p.dot(hull.back()) >= p.dot(hull[hull.size() - 2])) {
+                hull.pop_back();
             }
             return p.dot(hull.back());
         }
