@@ -11,7 +11,7 @@ const ll ll_inf = 1e18;
 // 其次，在维护凸包时要保证待维护向量 v1 的 x 值 v1.x 单调递增
 
 struct Vec {
-    ll x, y;
+    long long x, y;
     Vec(ll x = 0, ll y = 0) : x(x), y(y) {}
 
     Vec operator-(const Vec& other) const {
@@ -40,19 +40,33 @@ struct UpperHull {
         hull.push_back(p);
     }
 
+    // 保证 v0.x 单调
+    // 如果 v0.x 单调递增，则 UpperHull.query_monotonic(v0,  1)
+    // 如果 v0.x 单调递减，则 UpperHull.query_monotonic(v0, -1)
     // 复杂度 O(n)
-    long long query_monotonic(const Vec& p) {
-        while (hull.size() > 1 && p.dot(hull[0]) <= p.dot(hull[1]))
-            hull.pop_front();
-        return p.dot(hull.front());
+    long long query_monotonic(const Vec& p, int dir) {
+        long long n = hull.size();
+        if (dir > 0) {
+            while (n > 1 && p.dot(hull[0]) <= p.dot(hull[1])) {
+                hull.pop_front();
+            }
+            return p.dot(hull.front());
+        }
+        
+        else {
+            while (n > 1 && p.dot(hull.back()) <= p.dot(hull[n - 2])) {
+                hull.pop_front();
+            }
+            return p.dot(hull.back());
+        }
     }
 
     // 二分查询最大值，复杂度 O(nlogn)
     long long query_binary(const Vec& p) const {
-        int l = 0, r = hull.size()-1;
+        int l = 0, r = hull.size() - 1;
         while (l < r) {
-            int mid = (l+r)>>1;
-            if (p.dot(hull[mid]) <= p.dot(hull[mid+1])) l = mid+1;
+            int mid = (l + r) >> 1;
+            if (p.dot(hull[mid]) <= p.dot(hull[mid + 1])) l = mid + 1;
             else r = mid;
         }
         return p.dot(hull[l]);
@@ -72,19 +86,33 @@ struct LowerHull {
         hull.push_back(p);
     }
 
+    // 保证 v0.x 单调
+    // 如果 v0.x 单调递增，则 UpperHull.query_monotonic(v0,  1)
+    // 如果 v0.x 单调递减，则 UpperHull.query_monotonic(v0, -1)
     // 复杂度 O(n)
-    long long query_monotonic(const Vec& p) {
-        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
-            hull.pop_front();
-        return p.dot(hull.front());
+    long long query_monotonic(const Vec& p, int dir) {
+        long long n = hull.size();
+        if (dir < 0) {
+            while (n > 1 && p.dot(hull[0]) >= p.dot(hull[1])) {
+                hull.pop_front();
+            }
+            return p.dot(hull.front());
+        }
+        
+        else {
+            while (n > 1 && p.dot(hull.back()) >= p.dot(hull[n - 2])) {
+                hull.pop_front();
+            }
+            return p.dot(hull.back());
+        }
     }
 
     // 二分查询最小值，复杂度 O(nlogn)
     long long query_binary(const Vec& p) const {
-        int l = 0, r = hull.size()-1;
+        int l = 0, r = hull.size() - 1;
         while (l < r) {
-            int mid = (l+r)>>1;
-            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            int mid = (l + r) >> 1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid + 1])) l = mid + 1;
             else r = mid;
         }
         return p.dot(hull[l]);
