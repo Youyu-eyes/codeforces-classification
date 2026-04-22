@@ -1,3 +1,4 @@
+// https://github.com/Youyu-eyes/codeforces-classification
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -121,7 +122,7 @@ public:
 
 
 // Lazy 线段树
-// 模板来源 https://leetcode.cn/circle/discuss/mOr1u6/
+// 模板来源 https://github.com/Youyu-eyes/codeforces-classification
 template<typename T, typename F>
 class LazySegmentTree {
     // 注：也可以去掉 template<typename T, typename F>，改在这里定义 T 和 F
