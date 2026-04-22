@@ -82,27 +82,37 @@ struct Vec {
 struct LowerHull {
     deque<Vec> hull;
     void add(const Vec& p) {
-        while (hull.size() > 1 && (p - hull.back()).det(hull.back() - hull[hull.size() - 2]) >= 0) {
+        while (hull.size() > 1 && (hull.back() - hull[hull.size() - 2]).det(p - hull.back()) <= 0) {
             hull.pop_back();
         }
 
         hull.push_back(p);
     }
 
-    // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
+    // 保证 v0.x 单调
+    // 如果 v0.x 单调递增，则 LowerHull.query_monotonic(v0,  1)
+    // 如果 v0.x 单调递减，则 LowerHull.query_monotonic(v0, -1)
     // 复杂度 O(n)
-    long long query_monotonic(const Vec& p) {
-        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
-            hull.pop_front();
-        return p.dot(hull.front());
+    long long query_monotonic(const Vec& p, int dir) {
+        if (dir < 0) {
+            while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1])) {
+                hull.pop_front();
+            }
+            return p.dot(hull.front());
+        } else {
+            while (hull.size() > 1 && p.dot(hull.back()) >= p.dot(hull[hull.size() - 2])) {
+                hull.pop_back();
+            }
+            return p.dot(hull.back());
+        }
     }
 
     // 二分查询最小值，复杂度 O(nlogn)
     long long query_binary(const Vec& p) const {
-        int l = 0, r = hull.size()-1;
+        int l = 0, r = hull.size() - 1;
         while (l < r) {
-            int mid = (l+r)>>1;
-            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            int mid = (l + r) >> 1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid + 1])) l = mid + 1;
             else r = mid;
         }
         return p.dot(hull[l]);
@@ -128,7 +138,7 @@ void solve() {
     for (int i = 1; i < n; ++i) {
         Vec v0(-a[i], 1);
 
-        f[i] = q.query_monotonic(v0);
+        f[i] = q.query_monotonic(v0, -1);
         Vec v1(-b[i], f[i]);
 
         q.add(v1);
