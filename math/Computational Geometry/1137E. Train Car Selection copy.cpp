@@ -81,14 +81,34 @@ struct LowerHull {
         hull.push_back(p);
     }
 
+    // 保证 v0.x 单调
+    // 如果 v0.x 单调递增，则 LowerHull.query_monotonic(v0,  1)
+    // 如果 v0.x 单调递减，则 LowerHull.query_monotonic(v0, -1)
     // 复杂度 O(n)
-    Vec query_monotonic(const Vec& p) {
-        while (hull.size() > 1 && p.dot(hull.back()) >= p.dot(hull[hull.size() - 2])) {
-            hull.pop_back();
+    Vec query_monotonic(const Vec& p, int dir) {
+        if (dir < 0) {
+            while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1])) {
+                hull.pop_front();
+            }
+            return hull.front();
+        } else {
+            while (hull.size() > 1 && p.dot(hull.back()) >= p.dot(hull[hull.size() - 2])) {
+                hull.pop_back();
+            }
+            return hull.back();
         }
-        return hull.back();
     }
 
+    // 二分查询最小值，复杂度 O(nlogn)
+    long long query_binary(const Vec& p) const {
+        int l = 0, r = hull.size() - 1;
+        while (l < r) {
+            int mid = (l + r) >> 1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid + 1])) l = mid + 1;
+            else r = mid;
+        }
+        return p.dot(hull[l]);
+    }
     bool empty() const { return hull.empty(); }
     void clear() { hull.clear(); }
 };
@@ -122,7 +142,7 @@ void solve() {
         }
 
         Vec v0(t_s, 1);
-        Vec point = q.query_monotonic(v0);
+        Vec point = q.query_monotonic(v0, 1);
         ll ans_x = point.x;
         ll ans_v = v0.dot(point) + t_b;
         cout << ans_x + 1 << ' ' << ans_v << endl;
