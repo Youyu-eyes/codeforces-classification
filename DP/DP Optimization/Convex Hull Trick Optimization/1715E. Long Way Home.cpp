@@ -61,20 +61,30 @@ struct LowerHull {
         hull.push_back(p);
     }
 
-    // 单调查询，这里假设 p 的 x 单调递增，最小值点单调右移
+    // 保证 v0.x 单调
+    // 如果 v0.x 单调递增，则 LowerHull.query_monotonic(v0,  1)
+    // 如果 v0.x 单调递减，则 LowerHull.query_monotonic(v0, -1)
     // 复杂度 O(n)
-    long long query_monotonic(const Vec& p) {
-        while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1]))
-            hull.pop_front();
-        return p.dot(hull.front());
+    long long query_monotonic(const Vec& p, int dir) {
+        if (dir < 0) {
+            while (hull.size() > 1 && p.dot(hull[0]) >= p.dot(hull[1])) {
+                hull.pop_front();
+            }
+            return p.dot(hull.front());
+        } else {
+            while (hull.size() > 1 && p.dot(hull.back()) >= p.dot(hull[hull.size() - 2])) {
+                hull.pop_back();
+            }
+            return p.dot(hull.back());
+        }
     }
 
     // 二分查询最小值，复杂度 O(nlogn)
     long long query_binary(const Vec& p) const {
-        int l = 0, r = hull.size()-1;
+        int l = 0, r = hull.size() - 1;
         while (l < r) {
-            int mid = (l+r)>>1;
-            if (p.dot(hull[mid]) >= p.dot(hull[mid+1])) l = mid+1;
+            int mid = (l + r) >> 1;
+            if (p.dot(hull[mid]) >= p.dot(hull[mid + 1])) l = mid + 1;
             else r = mid;
         }
         return p.dot(hull[l]);
@@ -129,7 +139,7 @@ void solve() {
 
         for (int v = 0; v < n; ++v) {
             Vec v0(-2 * v, 1);
-            ll best = q.query_monotonic(v0);
+            ll best = q.query_monotonic(v0, -1);
             fly[v] = best + 1LL * v * v;
         }
         dis = shortestPathDijkstra(n, fly, g);
