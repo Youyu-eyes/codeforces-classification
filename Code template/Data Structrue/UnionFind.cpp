@@ -39,6 +39,10 @@ public:
         if (x == y) { // from 和 to 在同一个集合，不做合并
             return false;
         }
+
+        // 按秩合并：将节点数少的树挂在节点数多的树下 
+        if (sz[x] > sz[y]) swap(x, y);
+
         fa[x] = y; // 合并集合。修改后就可以认为 from 和 to 在同一个集合了
         sz[y] += sz[x]; // 更新集合大小（注意集合大小保存在代表元上）
         // 无需更新 sz[x]，因为我们不用 sz[x] 而是用 sz[find(x)] 获取集合大小，但 find(x) == y，我们不会再访问 sz[x]
@@ -97,13 +101,23 @@ public:
     // 合并 from 和 to，新增信息 to - from = value
     // 其中 to 和 from 表示未知量，下文的 x 和 y 也表示未知量
     // 如果 from 和 to 不在同一个集合，返回 true，否则返回是否与已知信息矛盾
-    bool merge(int from, int to, T value) {
+    bool merge(int from, int to, long long value) {
         int x = find(from), y = find(to);
-        if (x == y) {
-            return dis[from] - dis[to] == value;
+        if (x == y) return false;
+
+        // 按秩合并
+        if (_size[x] < _size[y]) {
+            // x 挂到 y 下：dis[x] = dis[to] + value - dis[from]
+            _fa[x] = y;
+            dis[x] = dis[to] + value - dis[from];
+            _size[y] += _size[x];
+        } else {
+            // y 挂到 x 下：dis[y] = dis[from] - value - dis[to]
+            _fa[y] = x;
+            dis[y] = dis[from] - value - dis[to];
+            _size[x] += _size[y];
         }
-        dis[x] = value + dis[to] - dis[from];
-        fa[x] = y;
+        cc--;
         return true;
     }
 };

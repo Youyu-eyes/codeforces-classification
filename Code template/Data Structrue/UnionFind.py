@@ -28,6 +28,11 @@ class UnionFind:
         x, y = self.find(from_), self.find(to)
         if x == y:  # from 和 to 在同一个集合，不做合并
             return False
+        
+        # 按秩合并：小树合并到大树
+        if self._size[x] > self._size[y]:
+            x, y = y, x  # 确保 y 是大树的根
+
         self._fa[x] = y  # 合并集合。修改后就可以认为 from 和 to 在同一个集合了
         self._size[y] += self._size[x]  # 更新集合大小（注意集合大小保存在代表元上）
         # 无需更新 _size[x]，因为我们不用 _size[x] 而是用 _size[find(x)] 获取集合大小，但 find(x) == y，我们不会再访问 _size[x]
@@ -74,9 +79,22 @@ class UnionFindWithWight:
     # 如果 from 和 to 不在同一个集合，返回 True，否则返回是否与已知信息矛盾
     def merge(self, from_: int, to: int, value: int) -> bool:
         x, y = self.find(from_), self.find(to)
-        dis = self.dis
         if x == y:
-            return dis[from_] - dis[to] == value
-        dis[x] = value + dis[to] - dis[from_]
-        self.fa[x] = y
+            return False
+
+        # 按秩合并
+        if self._size[x] < self._size[y]:
+            # 情况 A：x 是小树，直接挂在 y 下
+            # 这里的公式推导：dis[x] = dis[to] + value - dis[from]
+            self._fa[x] = y
+            self.dis[x] = self.dis[to] + value - self.dis[from_]
+            self._size[y] += self._size[x]
+        else:
+            # 情况 B：y 是小树，挂在 x 下（注意方向反转，value 变负）
+            # 这里的公式推导：dis[y] = dis[from] - value - dis[to]
+            self._fa[y] = x
+            self.dis[y] = self.dis[from_] - value - self.dis[to]
+            self._size[x] += self._size[y]
+
+        self.cc -= 1
         return True
