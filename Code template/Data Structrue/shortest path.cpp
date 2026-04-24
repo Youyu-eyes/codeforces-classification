@@ -74,6 +74,36 @@ vector<long long> shortestPathDijkstra(int n, vector<vector<int>>& edges, int st
     return dis;
 }
 
+// 网格图 Dijkstra
+vector<vector<long long>> shortestPathDijkstra(int m, int n, vector<vector<int>>& grid, pair<int, int> start) {
+    auto [start_x, start_y] = start;
+    vector dis(m, vector<long long>(n, ll_inf));
+    // 堆中保存 (起点到节点 x 的最短路长度，节点 x)
+    priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<>> pq;
+    dis[start_x][start_y] = 0; // 起点到自己的距离是 0
+    pq.emplace(0, start_x, start_y);
+
+    while (!pq.empty()) {
+        auto [dis_xy, x, y] = pq.top();
+        pq.pop();
+        if (dis_xy > dis[x][y]) { // x 之前出堆过
+            continue;
+        }
+        for (auto& [i, j] : {pair{x - 1, y}, pair{x + 1, y}, pair{x, y - 1}, pair{x, y + 1}}) {
+            if (i < 0 || i >= m || j < 0 || j >= n) continue;
+            auto new_dis_ij = dis_xy + 1LL * grid[i][j];
+            if (new_dis_ij < dis[i][j]) {
+                dis[i][j] = new_dis_ij; // 更新 x 的邻居的最短路
+                // 懒更新堆：只插入数据，不更新堆中数据
+                // 相同节点可能有多个不同的 new_dis_y，除了最小的 new_dis_y，其余值都会触发上面的 continue
+                pq.emplace(new_dis_ij, i, j);
+            }
+        }
+    }
+
+    return dis;
+}
+
 
 // Floyd：全源最短路
 
