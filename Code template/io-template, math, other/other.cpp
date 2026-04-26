@@ -21,6 +21,23 @@ int main() {
     auto zipped = views::zip(nums1, nums2);
     ranges::sort(zipped, std::less{},
                   [](const auto& t) { return std::get<0>(t); });
+    
+    // 元音字母下标对应
+    static constexpr array<int, 128> mp = [] {
+        array<int, 128> a;
+        a.fill(-1);
+        a['a'] = 0;
+        a['e'] = 1;
+        a['i'] = 2;
+        a['o'] = 3;
+        a['u'] = 4;
+        return a;
+    }();
+
+    int cnt[5]{};
+    string vowels;
+    // 稳定排序，在出现次数相同时，会自动把位置靠前的元音排在前面
+    ranges::stable_sort(vowels, {}, [&](char ch) { return -cnt[mp[ch]]; });
 
     return 0;
 }
