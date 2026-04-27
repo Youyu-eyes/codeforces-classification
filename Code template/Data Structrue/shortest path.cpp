@@ -39,7 +39,7 @@ vector<int> zero_one_bfs(int n, vector<vector<pair<int, int>>>& g, int start) {
 // 返回从起点 start 到每个点的最短路长度 dis，如果节点 x 不可达，则 dis[x] = ll_inf
 // 要求：没有负数边权
 // 时间复杂度 O(n + mlogm)，注意堆中有 O(m) 个元素
-vector<long long> shortestPathDijkstra(int n, vector<vector<int>>& edges, int start) {
+pair<vector<long long>, vector<vector<int>>> shortestPathDijkstra(int n, vector<vector<int>>& edges, int start) {
     // 注：如果节点编号从 1 开始（而不是从 0 开始），可以把 n 加一
     vector<vector<pair<int, int>>> g(n); // 邻接表
     for (auto& e : edges) {
@@ -81,11 +81,11 @@ vector<long long> shortestPathDijkstra(int n, vector<vector<int>>& edges, int st
         }
     }
 
-    return dis;
+    return {dis, pre};
 }
 
 // 网格图 Dijkstra
-vector<vector<long long>> shortestPathDijkstra(int m, int n, vector<vector<int>>& grid, pair<int, int> start) {
+pair<vector<vector<long long>>, vector<vector<vector<pair<int, int>>>>> shortestPathDijkstra(int m, int n, vector<vector<int>>& grid, pair<int, int> start) {
     auto [start_x, start_y] = start;
     vector dis(m, vector<long long>(n, ll_inf));
     // 堆中保存 (起点到节点 x 的最短路长度，节点 x)
@@ -121,7 +121,7 @@ vector<vector<long long>> shortestPathDijkstra(int m, int n, vector<vector<int>>
         }
     }
 
-    return dis;
+    return {dis, pre};
 }
 
 
