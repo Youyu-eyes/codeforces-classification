@@ -38,6 +38,9 @@ def shortestPathDijkstra(n: int, edges: List[List[int]], start: int) -> List[int
     dis[start] = 0  # 起点到自己的距离是 0
     h = [(0, start)]  # 堆中保存 (起点到节点 x 的最短路长度，节点 x)
 
+    # 记录前驱节点
+    pre = [[] for _ in range(n)]
+
     while h:
         dis_x, x = heappop(h)
         if dis_x > dis[x]:  # x 之前出堆过
@@ -49,8 +52,15 @@ def shortestPathDijkstra(n: int, edges: List[List[int]], start: int) -> List[int
                 # 懒更新堆：只插入数据，不更新堆中数据
                 # 相同节点可能有多个不同的 new_dis_y，除了最小的 new_dis_y，其余值都会触发上面的 continue
                 heappush(h, (new_dis_y, y))
+                
+                # 发现更短的路径，重置前驱节点
+                pre[y] = [x]
+            
+            # 一样的最短路径
+            elif new_dis_y == dis[y]:
+                pre[y].append(x)
 
-    return dis
+    return dis, pre
 
 # 网格图 Dijkstra
 def shortestPathDijkstra(m: int, n: int, grid: List[List[int]], start: tuple[int, int]) -> List[int]:
@@ -58,6 +68,10 @@ def shortestPathDijkstra(m: int, n: int, grid: List[List[int]], start: tuple[int
     dis = [[inf] * n for _ in range(m)]
     dis[start_x][start_y] = 0
     h = [(0, (start_x, start_y))]
+
+    # 记录前驱节点
+    pre = [[[] for _ in range(n)] for _ in range(m)]
+
 
     while h:
         dis_xy, (x, y) = heappop(h)
@@ -73,7 +87,14 @@ def shortestPathDijkstra(m: int, n: int, grid: List[List[int]], start: tuple[int
                 # 相同节点可能有多个不同的 new_dis_y，除了最小的 new_dis_y，其余值都会触发上面的 continue
                 heappush(h, (new_dis_ij, (i, j)))
 
-    return dis
+                # 发现更短的路径，重置前驱节点
+                pre[i][j] = [(x, y)]
+            
+            # 一样的最短路径
+            elif new_dis_ij == dis[i][j]:
+                pre[i][j].append((x, y))
+
+    return dis, pre
 
 
 # Floyd：全源最短路
