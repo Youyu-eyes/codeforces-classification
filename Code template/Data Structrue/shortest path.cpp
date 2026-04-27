@@ -54,6 +54,8 @@ vector<long long> shortestPathDijkstra(int n, vector<vector<int>>& edges, int st
     dis[start] = 0; // 起点到自己的距离是 0
     pq.emplace(0, start);
 
+    vector<vector<int>> pre(n);
+
     while (!pq.empty()) {
         auto [dis_x, x] = pq.top();
         pq.pop();
@@ -67,6 +69,14 @@ vector<long long> shortestPathDijkstra(int n, vector<vector<int>>& edges, int st
                 // 懒更新堆：只插入数据，不更新堆中数据
                 // 相同节点可能有多个不同的 new_dis_y，除了最小的 new_dis_y，其余值都会触发上面的 continue
                 pq.emplace(new_dis_y, y);
+
+                // 找到更短的路径，重置前驱节点
+                pre[y] = {x};
+            }
+            
+            // 一样短的路径
+            else if (new_dis_y == dis[y]) {
+                pre[y].push_back(x);
             }
         }
     }
@@ -83,6 +93,8 @@ vector<vector<long long>> shortestPathDijkstra(int m, int n, vector<vector<int>>
     dis[start_x][start_y] = 0; // 起点到自己的距离是 0
     pq.emplace(0, start_x, start_y);
 
+    vector  pre(m, vector<vector<pair<int, int>>>(n));
+    
     while (!pq.empty()) {
         auto [dis_xy, x, y] = pq.top();
         pq.pop();
@@ -97,6 +109,14 @@ vector<vector<long long>> shortestPathDijkstra(int m, int n, vector<vector<int>>
                 // 懒更新堆：只插入数据，不更新堆中数据
                 // 相同节点可能有多个不同的 new_dis_y，除了最小的 new_dis_y，其余值都会触发上面的 continue
                 pq.emplace(new_dis_ij, i, j);
+
+                // 找到更短的路径，重置前驱节点
+                pre[i][j] = {{x, y}};
+            }
+
+            // 一样短的路径
+            else if (new_dis_ij == dis[i][j]) {
+                pre[i][j].push_back({x, y});
             }
         }
     }
