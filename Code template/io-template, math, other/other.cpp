@@ -17,6 +17,9 @@ int main() {
     ranges::sort(nums, [](const auto& a, const auto& b) {
         return tie(a[0], b[1]) < tie(b[0], a[1]);
     });
+    // 原数组是元组数组的双关键字排序
+    vector<pair<int, int>> nums_pair;
+    ranges::sort(nums_pair, {}, [](auto& e) { return pair(e.first, -e.second); });
     // nums1 与 nums2 下标一一对应，实现 nums1 升序排序，nums2 保持下标对应排序
     auto zipped = views::zip(nums1, nums2);
     ranges::sort(zipped, std::less{},
