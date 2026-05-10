@@ -12,11 +12,13 @@
 
 # from collections import defaultdict, Counter, deque
 
-# from sortedcontainers import SortedSet, SortedDict, SortedList
 # import datetime
 # from typing import List, Tuple
 
 # MOD = 1_000_000_007
+
+# 第三方库，非线上不可用
+# from sortedcontainers import SortedSet, SortedDict, SortedList
 
 import sys
 input = lambda: sys.stdin.readline().rstrip('\r\n')
