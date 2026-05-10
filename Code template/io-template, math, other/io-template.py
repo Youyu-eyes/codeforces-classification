@@ -1,40 +1,18 @@
-# from math import inf
-# from math import gcd
-# from math import lcm
-# from math import sin
-# from math import pi
-# from math import sqrt
-# from math import isqrt
+# from math import inf, gcd, lcm, sin, pi, sqrt, isqrt
 
-# from heapq import heapify
-# from heapq import heappush
-# from heapq import heappop
-# from heapq import heapreplace
-# from heapq import nsmallest
-# from heapq import nlargest
+# from heapq import heapify, heappush, heappop, heapreplace, nsmallest, nlargst
 
-# from heapq import heapify_max
-# from heapq import heappush_max
-# from heapq import heappop_max
-# from heapq import heapreplace_max
-# from heapq import nsmallest_max
-# from heapq import nlargest_max
+# from heapq import heapify_max, heappush_max, heappop_max, heapreplace_max, nsmallest_max, nlargest_max
 
 # from functools import cache
 
-# from itertools import accumulate
-# from itertools import zip_longest
-# from itertools import pairwise
-# from itertools import combinations
-# from itertools import permutations
+# from itertools import accumulate, zip_longest, pairwise, combinations, permutations
 
-# from bisect import bisect_left
-# from bisect import bisect_right
+# from bisect import bisect_left, bisect_right
 
-# from collections import defaultdict
-# from collections import Counter
-# from collections import deque
+# from collections import defaultdict, Counter, deque
 
+# from sortedcontainers import SortedSet, SortedDict, SortedList
 # import datetime
 # from typing import List, Tuple
 
