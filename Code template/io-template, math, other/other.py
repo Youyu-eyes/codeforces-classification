@@ -41,32 +41,13 @@ print(t1.weekday())  # 0-6, 0代表周一
 
 # 自定义排序
 # https://leetcode.cn/problems/maximum-value-of-concatenated-binary-segments/description/
-MOD = 1_000_000_007
-
+# compare 函数需要接受 a, b 两个参数，然后返回 -1/0/1
+nums = []
 def compare(a, b):
-    a1, a0 = a
-    b1, b0 = b
-    val_a = ((1 << a1) - 1) << a0
-    val_b = ((1 << b1) - 1) << b0
-    len_a = a1 + a0
-    len_b = b1 + b0
-    ab = (val_a << len_b) + val_b
-    ba = (val_b << len_a) + val_a
-
-    if ab > ba:
-        return -1
-    elif ab < ba:
-        return 1
-    return 0
-
-class Solution:
-    def maxValue(self, nums1: list[int], nums0: list[int]) -> int:
-        n = len(nums1)
-
-        cur = [(nums1[i], nums0[i]) for i in range(n)]
-        cur.sort(key = cmp_to_key(compare))
-
-        ans = 0
-        for x, y in cur:
-            ans = (ans * pow(2, x + y, MOD) % MOD + (pow(2, x, MOD) - 1) * pow(2, y, MOD)) % MOD
-        return ans
+    if a < b:
+        return -1 # 表示 a 排在 b 之前
+    if a == b:
+        return 0 # 表示 a 与 b 顺序无所谓
+    if a > b:
+        return 1 # 表示 a 排在 b 之后
+nums.sort(key = cmp_to_key(compare))
