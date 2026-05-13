@@ -11,7 +11,7 @@ const ll ll_inf = 1e18;
 // 计算从 start 到各个节点的最短路长度
 // 如果节点不可达，则最短路长度为 inf
 // 节点编号从 0 到 n-1，边权为 0 or 1
-vector<int> zero_one_bfs(int n, vector<vector<pair<int, int>>>& g, int start) {
+vector<int> bfs_01(int n, vector<vector<pair<int, int>>>& g, int start) {
     vector<int> dis(n, inf);
     deque<int> q;
     q.push_back(start);
@@ -39,7 +39,7 @@ vector<int> zero_one_bfs(int n, vector<vector<pair<int, int>>>& g, int start) {
 // 返回从起点 start 到每个点的最短路长度 dis，如果节点 x 不可达，则 dis[x] = ll_inf
 // 要求：没有负数边权
 // 时间复杂度 O(n + mlogm)，注意堆中有 O(m) 个元素
-pair<vector<long long>, vector<vector<int>>> shortestPathDijkstra(int n, vector<vector<int>>& edges, int start) {
+pair<vector<long long>, vector<vector<int>>> Dijkstra(int n, vector<vector<int>>& edges, int start) {
     // 注：如果节点编号从 1 开始（而不是从 0 开始），可以把 n 加一
     vector<vector<pair<int, int>>> g(n); // 邻接表
     for (auto& e : edges) {
@@ -85,7 +85,7 @@ pair<vector<long long>, vector<vector<int>>> shortestPathDijkstra(int n, vector<
 }
 
 // 网格图 Dijkstra
-pair<vector<vector<long long>>, vector<vector<vector<pair<int, int>>>>> shortestPathDijkstra(int m, int n, vector<vector<int>>& grid, pair<int, int> start) {
+pair<vector<vector<long long>>, vector<vector<vector<pair<int, int>>>>> Dijkstra_grid(int m, int n, vector<vector<int>>& grid, pair<int, int> start) {
     auto [start_x, start_y] = start;
     vector dis(m, vector<long long>(n, ll_inf));
     // 堆中保存 (起点到节点 x 的最短路长度，节点 x)
@@ -133,7 +133,7 @@ pair<vector<vector<long long>>, vector<vector<vector<pair<int, int>>>>> shortest
 // 如果计算完毕后，存在 i，使得从 i 到 i 的最短路长度小于 0，说明图中有负环
 // 节点编号从 0 到 n-1
 // 时间复杂度 O(n^3 + m)，其中 m 是 edges 的长度
-vector<vector<long long>> shortestPathFloyd(int n, vector<vector<int>>& edges) {
+vector<vector<long long>> Floyd(int n, vector<vector<int>>& edges) {
     const long long INF = ll_inf / 2; // 防止加法溢出
     vector f(n, vector<long long>(n, INF));
     for (int i = 0; i < n; i++) {
