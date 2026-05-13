@@ -3,8 +3,8 @@ using namespace std;
 
 using ll = long long;
 const int MOD = 1'000'000'007;
-const int inf = INT_MAX;
-const ll ll_inf = LLONG_MAX;
+const int inf = 0x3f3f3f3f;
+const ll ll_inf = 1e18;
 
 // 返回图的二染色
 // 如果是二分图，返回每个节点的颜色，用 1 和 2 表示两种颜色
