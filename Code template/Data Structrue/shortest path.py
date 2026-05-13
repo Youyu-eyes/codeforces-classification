@@ -8,7 +8,7 @@ from typing import List, Tuple
 # 如果节点无法到达，最短路为 inf
 # 节点编号从 0 到 n-1，边权为 0 or 1
 
-def zero_one_bfs(n: int, g: List[List[Tuple[int, int]]], start: int) -> List[int]:
+def bfs_01(n: int, g: List[List[Tuple[int, int]]], start: int) -> List[int]:
     dis = [inf] * n
     dis[start] = 0
     q = deque([start])
@@ -27,7 +27,7 @@ def zero_one_bfs(n: int, g: List[List[Tuple[int, int]]], start: int) -> List[int
 
 # dijkstra：单源最短路
 
-def shortestPathDijkstra(n: int, edges: List[List[int]], start: int) -> List[int]:
+def Dijkstra(n: int, edges: List[List[int]], start: int) -> List[int]:
     # 注：如果节点编号从 1 开始（而不是从 0 开始），可以把 n 加一
     g = [[] for _ in range(n)]  # 邻接表
     for x, y, wt in edges:
@@ -63,7 +63,7 @@ def shortestPathDijkstra(n: int, edges: List[List[int]], start: int) -> List[int
     return dis, pre
 
 # 网格图 Dijkstra
-def shortestPathDijkstra(m: int, n: int, grid: List[List[int]], start: tuple[int, int]) -> List[int]:
+def Dijkstra_grid(m: int, n: int, grid: List[List[int]], start: tuple[int, int]) -> List[int]:
     start_x, start_y = start
     dis = [[inf] * n for _ in range(m)]
     dis[start_x][start_y] = 0
@@ -105,7 +105,7 @@ def shortestPathDijkstra(m: int, n: int, grid: List[List[int]], start: tuple[int
 # 如果计算完毕后，存在 i，使得从 i 到 i 的最短路长度小于 0，说明图中有负环
 # 节点编号从 0 到 n-1
 # 时间复杂度 O(n^3 + m)，其中 m 是 edges 的长度
-def shortestPathFloyd(self, n: int, edges: List[List[int]]) -> List[List[int]]:
+def Floyd(self, n: int, edges: List[List[int]]) -> List[List[int]]:
     f = [[inf] * n for _ in range(n)]
     for i in range(n):
         f[i][i] = 0
