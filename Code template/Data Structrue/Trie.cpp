@@ -71,7 +71,6 @@ struct TrieNode {
 };
 
 class Trie {
-    // 注：我没有写析构函数，想写的同学可以自己补上
     TrieNode* root = new TrieNode();
 
 public:
