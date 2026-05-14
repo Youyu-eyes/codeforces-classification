@@ -646,13 +646,15 @@ public:
 
 
 // ------- 静态李超线段树（整数版本） ------- //
+const double eps = 1e-9;
+
 struct Line {
-    long long k, b;
+    double k, b;
     int id;
     Line() : k(0), b(ll_inf), id(0) {}
     // 最大值：Line() : k(0), b(-ll_inf), id(0) {}
-    Line(long long k, long long b, int id) : k(k), b(b), id(id) {}
-    long long calc(long long x) const { return k * x + b; }
+    Line(double k, double b, int id) : k(k), b(b), id(id) {}
+    double calc(int x) const { return k * x + b; }
 };
 
 class LiChaoSegmentTree {
@@ -666,14 +668,14 @@ private:
     int n;
     vector<Node> tree;
 
-    Line better(const Line& a, const Line& b, long long x) const {
+    Line better(const Line& a, const Line& b, int x) const {
         if (a.id == 0) return b;
         if (b.id == 0) return a;
-        long long va = a.calc(x), vb = b.calc(x);
-        if (va < vb) return a;
-        // 最大值：if (va > vb) return a;
-        if (vb < va) return b;
-        // 最大值：if (vb > va) return b;
+        double va = a.calc(x), vb = b.calc(x);
+        if (va - vb < -eps) return a;
+        // 最大值：if (va - vb > eps) return a;
+        if (vb - va < -eps) return b;
+        // 最大值：if (vb - va > eps) return b;
         return a.id < b.id ? a : b;
     }
 
@@ -681,14 +683,14 @@ private:
         if (l > r) return;
         Line old_line = tree[node].line;
         int mid = (l + r) >> 1;
-        bool better_at_mid = new_line.calc(mid) < old_line.calc(mid);
-        // 最大值：bool better_at_mid = new_line.calc(mid) > old_line.calc(mid);
+        bool better_at_mid = new_line.calc(mid) < old_line.calc(mid) - eps;
+        // 最大值：bool better_at_mid = new_line.calc(mid) > old_line.calc(mid) + eps;
         if (better_at_mid) swap(tree[node].line, new_line);
         if (l == r) return;
-        bool better_at_left = new_line.calc(l) < old_line.calc(l);
-        // 最大值：bool better_at_left = new_line.calc(l) > old_line.calc(l);
-        bool better_at_right = new_line.calc(r) < old_line.calc(r);
-        // 最大值：bool better_at_right = new_line.calc(r) > old_line.calc(r);
+        bool better_at_left = new_line.calc(l) < old_line.calc(l) - eps;
+        // 最大值：bool better_at_left = new_line.calc(l) > old_line.calc(l) + eps;
+        bool better_at_right = new_line.calc(r) < old_line.calc(r) - eps;
+        // 最大值：bool better_at_right = new_line.calc(r) > old_line.calc(r) + eps;
         if (better_at_left != better_at_mid)
             update(node << 1, l, mid, new_line);
         else if (better_at_right != better_at_mid)
@@ -706,7 +708,7 @@ private:
         insert_line(node << 1 | 1, mid + 1, r, ql, qr, line);
     }
 
-    Line query(int node, int l, int r, long long x) {
+    Line query(int node, int l, int r, int x) {
         if (l == r) return tree[node].line;
         int mid = (l + r) >> 1;
         Line res = tree[node].line;
@@ -724,7 +726,7 @@ public:
         insert_line(1, 0, n, l, r, line);
     }
 
-    long long query(long long x) {
+    double query(int x) {
         Line line = query(1, 0, n, x);
         if (line.id == 0) return ll_inf;
         // 最大值：if (line.id == 0) return -ll_inf;
@@ -733,7 +735,19 @@ public:
 };
 
 
-// ------- 动态开点李超线段树（值域李超线段树，整数版本） ------- //
+// ------- 动态开点李超线段树（值域李超线段树） ------- //
+
+const double eps = 1e-9;
+struct Line {
+    double k, b;
+    int id;
+    Line() : k(0), b(ll_inf), id(0) {}
+    // 最大值：Line() : k(0), b(-ll_inf), id(0) {}
+    Line(double k, double b, int id) : k(k), b(b), id(id) {}
+    double calc(int x) const { return k * x + b; }
+};
+
+
 
 class DynamicLiChaoTree {
 private:
@@ -744,27 +758,32 @@ private:
         Node() : lc(nullptr), rc(nullptr), line() {}
     };
 
-    long long minX, maxX;
+    int minX, maxX;
     Node* root;
 
-    bool better(const Line& a, const Line& b, long long x) const {
+    bool better(const Line& a, const Line& b, int x) const {
         if (a.id == 0) return false;
         if (b.id == 0) return true;
-        long long va = a.calc(x), vb = b.calc(x);
-        if (va < vb) return true;
-        // 最大值：if (va > vb) return true;
-        if (vb < va) return false;
-        // 最大值：if (vb > va) return false;
+        double va = a.calc(x), vb = b.calc(x);
+
+        if (va - vb < -eps) return true;
+        // 最大值：if (va - vb > eps) return true;
+
+        if (vb - va < -eps) return false;
+        // 最大值：if (vb - va > eps) return false;
+
         return a.id < b.id;
+
     }
 
-    void update(Node* &p, long long l, long long r, Line new_line) {
+    void update(Node* &p, int l, int r, Line new_line) {
         if (!p) {
             p = new Node();
             p->line = new_line;
             return;
         }
-        long long mid = l + ((r - l) >> 1); // 防止极大值域导致溢出
+
+        int mid = (l + r) >> 1;
         bool left_better  = better(new_line, p->line, l);
         bool mid_better   = better(new_line, p->line, mid);
 
@@ -773,75 +792,99 @@ private:
             mid_better  = better(new_line, p->line, mid);
             left_better = better(new_line, p->line, l);
         }
+
         if (l == r) return;
+
         if (left_better != mid_better) {
             update(p->lc, l, mid, new_line);
         } else {
             update(p->rc, mid + 1, r, new_line);
         }
+
     }
 
-    void insert_segment(Node* &p, long long l, long long r, long long ql, long long qr, const Line& line) {
+    void insert_segment(Node* &p, int l, int r, int ql, int qr, const Line& line) {
         if (!p) p = new Node();
+
         if (ql <= l && r <= qr) {
             update(p, l, r, line);
             return;
         }
-        long long mid = l + ((r - l) >> 1);
+
+        int mid = (l + r) >> 1;
+
         if (ql <= mid) insert_segment(p->lc, l, mid, ql, qr, line);
         if (qr > mid)  insert_segment(p->rc, mid + 1, r, ql, qr, line);
+
     }
 
-    long long query(Node* p, long long l, long long r, long long x) const {
+    double query(Node* p, int l, int r, int x) const {
         if (!p) return ll_inf;
         // 最大值：if (!p) return -ll_inf;
-        long long res = (p->line.id == 0) ? ll_inf : p->line.calc(x);
-        // 最大值：long long res = (p->line.id == 0) ? -ll_inf : p->line.calc(x);
+
+        double res = (p->line.id == 0) ? ll_inf : p->line.calc(x);
+        // 最大值：double res = (p->line.id == 0) ? -ll_inf : p->line.calc(x);
+
         if (l == r) return res;
-        long long mid = l + ((r - l) >> 1);
+
+        int mid = (l + r) >> 1;
+
         if (x <= mid) return min(res, query(p->lc, l, mid, x));
         else          return min(res, query(p->rc, mid + 1, r, x));
         // 最大值：return max(res, ...)
+
     }
 
-    Node* merge(Node* p, Node* q, long long l, long long r) {
+    Node* merge(Node* p, Node* q, int l, int r) {
         if (!p) return q;
+
         if (!q) return p;
+
         if (l == r) {
             if (better(q->line, p->line, l))
                 p->line = q->line;
             return p;
+
         }
-        long long mid = l + ((r - l) >> 1);
+
+        int mid = (l + r) >> 1;
+
         p->lc = merge(p->lc, q->lc, l, mid);
         p->rc = merge(p->rc, q->rc, mid + 1, r);
+
         if (q->line.id != 0)
             update(p, l, r, q->line);
         return p;
+
     }
 
     void clear(Node* p) {
-        if (!p) return;
+        if (!p) return
         clear(p->lc);
         clear(p->rc);
         delete p;
     }
 
 public:
-    DynamicLiChaoTree(long long minX, long long maxX) : minX(minX), maxX(maxX), root(nullptr) {}
-
+    DynamicLiChaoTree(int minX, int maxX) : minX(minX), maxX(maxX), root(nullptr) {}
     ~DynamicLiChaoTree() { clear(root); }
 
-    void insert(long long l, long long r, const Line& line) {
+    void insert(int l, int r, const Line& line) {
         if (l > r) return;
+
         l = max(l, minX);
         r = min(r, maxX);
+
         if (l <= r) insert_segment(root, minX, maxX, l, r, line);
     }
 
-    long long query(long long x) const {
+
+
+    double query(int x) const {
         return query(root, minX, maxX, x);
     }
+
+
 
     void merge(DynamicLiChaoTree& other) {
         if (!other.root) return;
