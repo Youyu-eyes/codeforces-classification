@@ -1,6 +1,6 @@
 Codeforces 小白，记录刷题路线\
-leetcode 入门一年，leetcode 搜索 忧郁小眼神，详见主页 https://leetcode.cn/u/youyu-eyes/ \
-leetcode 周赛 2292 Guardian，详见周赛号 三笠，主页 https://leetcode.cn/u/mikasha/
+leetcode 入门一年，leetcode 搜索 [忧郁小眼神](https://leetcode.cn/u/youyu-eyes/) \
+leetcode 周赛 2292 Guardian，详见周赛号 [三笠](https://leetcode.cn/u/mikasha/)
 
 整理codeforces的题目，用灵神的题单进行分类\
 整理代码模板，板子来自leetcode灵神的题单
