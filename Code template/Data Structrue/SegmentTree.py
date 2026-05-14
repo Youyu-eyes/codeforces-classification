@@ -540,9 +540,7 @@ class DynamicLazySegmentTree:
         self.root = self._merge_nodes(self.root, other.root)
 
 
-# 李超线段树
-eps = 1e-10
-
+# ------- 静态李超线段树（整数版本） ------- #
 class Line:
     def __init__(self, k=0, b=inf, idx=0):
         # 最大值：def __init__(self, k=0, b=-inf, idx=0):
@@ -565,12 +563,12 @@ class LiChaoSegmentTree:
             return a
         va = a.calc(x)
         vb = b.calc(x)
-        if va - vb < -eps:
+        if va < vb:
             return a
-        # 最大值：if va - vb > eps:
-        if vb - va < -eps:
+        # 最大值：if va > vb:
+        if vb < va:
             return b
-        # 最大值：if vb - va > eps:
+        # 最大值：if vb > va:
         return a if a.idx < b.idx else b
     
     def _update(self, node, l, r, new_line):
@@ -578,16 +576,16 @@ class LiChaoSegmentTree:
             return
         old_line = self.tree[node]
         mid = (l + r) >> 1
-        better_at_mid = new_line.calc(mid) < old_line.calc(mid) - eps
-        # 最大值：better_at_mid = new_line.calc(mid) > old_line.calc(mid) + eps
+        better_at_mid = new_line.calc(mid) < old_line.calc(mid)
+        # 最大值：better_at_mid = new_line.calc(mid) > old_line.calc(mid)
         if better_at_mid:
             self.tree[node], new_line = new_line, old_line
         if l == r:
             return
-        better_at_left = new_line.calc(l) < old_line.calc(l) - eps
-        # 最大值：better_at_left = new_line.calc(l) > old_line.calc(l) + eps
-        better_at_right = new_line.calc(r) < old_line.calc(r) - eps
-        # 最大值：better_at_right = new_line.calc(r) > old_line.calc(r) + eps
+        better_at_left = new_line.calc(l) < old_line.calc(l)
+        # 最大值：better_at_left = new_line.calc(l) > old_line.calc(l)
+        better_at_right = new_line.calc(r) < old_line.calc(r)
+        # 最大值：better_at_right = new_line.calc(r) > old_line.calc(r)
         if better_at_left != better_at_mid:
             self._update(node << 1, l, mid, new_line)
         elif better_at_right != better_at_mid:
@@ -619,31 +617,17 @@ class LiChaoSegmentTree:
         line = self._query(1, 0, self.n, x)
         if line.idx == 0:
             return inf
-            # 最大值：return -inf
+            #最大值：return -inf
         return line.calc(x)
-    
-
-# 动态开点李超线段树
-eps = 1e-10
-
-class Line:
-    def __init__(self, k=0, b=inf, idx=0):
-        # 最大值：def __init__(self, k=0, b=-inf, idx=0):
-        self.k = k
-        self.b = b
-        self.idx = idx
-
-    def calc(self, x):
-        return self.k * x + self.b
 
 
+# ------- 动态开点李超线段树（整数版本） ------- #
 class Node:
     __slots__ = ('lc', 'rc', 'line')
     def __init__(self):
         self.lc = None
         self.rc = None
         self.line = Line()
-
 
 class DynamicLiChaoTree:
     def __init__(self, minX, maxX):
@@ -658,12 +642,12 @@ class DynamicLiChaoTree:
             return True
         va = a.calc(x)
         vb = b.calc(x)
-        if va - vb < -eps:
+        if va < vb:
             return True
-        # 最大值：if va - vb > eps: return True
-        if vb - va < -eps:
+        # 最大值：if va > vb: return True
+        if vb < va:
             return False
-        # 最大值：if vb - va > eps: return False
+        # 最大值：if vb > va: return False
         return a.idx < b.idx
 
     def _update(self, p, l, r, new_line):
@@ -704,7 +688,7 @@ class DynamicLiChaoTree:
     def _query(self, p, l, r, x):
         if p is None:
             return inf
-            # 最大值：return -inf
+            #最大值：return -inf
         res = inf if p.line.idx == 0 else p.line.calc(x)
         # 最大值：res = -inf if p.line.idx == 0 else p.line.calc(x)
         if l == r:
