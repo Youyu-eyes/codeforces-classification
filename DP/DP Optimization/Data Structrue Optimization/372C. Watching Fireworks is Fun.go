@@ -60,7 +60,7 @@ func solve(in *bufio.Reader, out *bufio.Writer) {
 	for i := 1; i < m; i++ {
 		st := newSparseTable(f, func(a, b int) int { return max(a, b) })
 		dist := (fw[i].t - fw[i - 1].t) * d
-		nf := make([]int, n+1)
+		nf := make([]int, n + 1)
 		for p := 1; p <= n; p++ {
 			best := st.query(max(1, p - dist), min(n, p + dist) + 1)
 			nf[p] = best + fw[i].b - abs(fw[i].a - p)
