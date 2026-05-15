@@ -1,3 +1,29 @@
+// https://codeforces.com/contest/597/problem/C
+// 1900
+// 线段树优化二维偏序问题
+
+// 由于子序列递增满足相邻相关，考虑枚举选哪个的思路
+// 假设我们选择下标为 i 的数作为第 K + 1 个数
+// 则问题变成了在前 i - 1 个数中选 K 个数的方案数
+
+// 假设上一次选择了下标 j 的数作为第 K 个数
+// 则问题变成了在前 j - 1 个数中选 K - 1 个数的方案数
+
+// 这是一个规模更小的子问题，可以用动态规划解决
+
+// 定义 f[K][i] 为在前 i - 1 个数中选择 K 个数的方案数
+// 状态转移方程为 f[K][i] = sum{j | K - 1 <= j < i, nums[j] < nums[i]}(f[K - 1][j])
+// 空间优化后为   nf[i] = sum{j | K - 1 <= j < i, nums[j] < nums[i]}(f[j])
+// 这是一个经典的二维偏序问题，前一个维度有序，因此不需要排序，只需要用值域树状数组或线段树维护第二个维度即可
+
+// 本题由于 n 个数全异，且值域为 n，因此不需要离散化
+// 本题解采用值域线段树优化 DP 转移
+
+// 时间复杂度: O(k·n·logn) 其中 n 表示数组长度，k 表示要求的递增子序列长度
+// 空间复杂度: O(n)
+
+// 请读者思考进阶问题：如果要求选择的 j 与 i 的距离有限制呢，如果上限好想，那么下限呢？
+
 package main
 
 import (
@@ -55,13 +81,13 @@ func solve() {
 		nf := make([]int, n)
 		for i := 0; i < n; i++ {
 			nf[i] = segtree.query(0, nums[i] - 1)
-			segtree.update(nums[i], f[i])
+			if i >= K - 1{
+				segtree.update(nums[i], f[i])
+			}
 		}
 		copy(f, nf)
 	}
-	ans := 0
-	for i := 0; i < n; i++ { ans += f[i] }
-	Println(ans)
+	Println(sum(f))
 }
 
 
@@ -88,6 +114,15 @@ func gcd(a, b int) int {
 		a, b = b, a%b
 	}
 	return a
+}
+
+// 数组要手动切片 sum(nums[:])
+func sum[T int | int64 | float64](nums []T) T {
+	var total T
+	for _, v := range nums {
+		total += v
+	}
+	return total
 }
 
 // ------- 线段树 ------- //
