@@ -129,3 +129,106 @@ int main() {
 
     return 0;
 }
+
+
+// ------- 二维 ST 表 ------- //
+// 初始化：SparseTable2D st(nums)
+
+class SparseTable2D {
+    vector<vector<vector<vector<int>>>> st_min;
+    vector<vector<vector<vector<int>>>> st_max;
+    vector<vector<vector<vector<int>>>> st_gcd;
+
+public:
+    SparseTable2D(const vector<vector<int>>& matrix) {
+        if (matrix.empty() || matrix[0].empty()) {
+            return;
+        }
+
+        int m = matrix.size();
+        int n = matrix[0].size();
+        int log_m = bit_width((uint32_t) m);
+        int log_n = bit_width((uint32_t) n);
+
+        st_min.assign(log_m, vector<vector<vector<int>>>(log_n, vector<vector<int>>(m, vector<int>(n))));
+        st_max.assign(log_m, vector<vector<vector<int>>>(log_n, vector<vector<int>>(m, vector<int>(n))));
+        st_gcd.assign(log_m, vector<vector<vector<int>>>(log_n, vector<vector<int>>(m, vector<int>(n))));
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                st_min[0][0][i][j] = matrix[i][j];
+                st_max[0][0][i][j] = matrix[i][j];
+                st_gcd[0][0][i][j] = matrix[i][j];
+            }
+        }
+
+        for (int l = 1; l < log_n; l++) {
+            int length = 1 << (l - 1);
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j + (1 << l) <= n; j++) {
+                    st_min[0][l][i][j] = min(st_min[0][l - 1][i][j], st_min[0][l - 1][i][j + length]);
+                    st_max[0][l][i][j] = max(st_max[0][l - 1][i][j], st_max[0][l - 1][i][j + length]);
+                    st_gcd[0][l][i][j] = std::gcd(st_gcd[0][l - 1][i][j], st_gcd[0][l - 1][i][j + length]);
+                }
+            }
+        }
+
+        for (int k = 1; k < log_m; k++) {
+            int length_r = 1 << (k - 1);
+            for (int l = 0; l < log_n; l++) {
+                for (int i = 0; i + (1 << k) <= m; i++) {
+                    for (int j = 0; j + (1 << l) <= n; j++) {
+                        st_min[k][l][i][j] = min(st_min[k - 1][l][i][j], st_min[k - 1][l][i + length_r][j]);
+                        st_max[k][l][i][j] = max(st_max[k - 1][l][i][j], st_max[k - 1][l][i + length_r][j]);
+                        st_gcd[k][l][i][j] = std::gcd(st_gcd[k - 1][l][i][j], st_gcd[k - 1][l][i + length_r][j]);
+                    }
+                }
+            }
+        }
+    }
+
+    int query_min(int r1, int r2, int c1, int c2) const {
+        int k = bit_width((uint32_t)(r2 - r1)) - 1;
+        int l = bit_width((uint32_t)(c2 - c1)) - 1;
+
+        int len_r = 1 << k;
+        int len_c = 1 << l;
+
+        int op1 = st_min[k][l][r1][c1];
+        int op2 = st_min[k][l][r2 - len_r][c1];
+        int op3 = st_min[k][l][r1][c2 - len_c];
+        int op4 = st_min[k][l][r2 - len_r][c2 - len_c];
+
+        return min({op1, op2, op3, op4});
+    }
+
+    int query_max(int r1, int r2, int c1, int c2) const {
+        int k = bit_width((uint32_t)(r2 - r1)) - 1;
+        int l = bit_width((uint32_t)(c2 - c1)) - 1;
+
+        int len_r = 1 << k;
+        int len_c = 1 << l;
+
+        int op1 = st_max[k][l][r1][c1];
+        int op2 = st_max[k][l][r2 - len_r][c1];
+        int op3 = st_max[k][l][r1][c2 - len_c];
+        int op4 = st_max[k][l][r2 - len_r][c2 - len_c];
+
+        return max({op1, op2, op3, op4});
+    }
+
+    int query_gcd(int r1, int r2, int c1, int c2) const {
+        int k = bit_width((uint32_t)(r2 - r1)) - 1;
+        int l = bit_width((uint32_t)(c2 - c1)) - 1;
+
+        int len_r = 1 << k;
+        int len_c = 1 << l;
+
+        int op1 = st_gcd[k][l][r1][c1];
+        int op2 = st_gcd[k][l][r2 - len_r][c1];
+        int op3 = st_gcd[k][l][r1][c2 - len_c];
+        int op4 = st_gcd[k][l][r2 - len_r][c2 - len_c];
+
+        return std::gcd(std::gcd(op1, op2), std::gcd(op3, op4));
+    }
+};
