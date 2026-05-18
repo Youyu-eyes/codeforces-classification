@@ -3,15 +3,13 @@ from typing import List, Tuple, Callable
 
 # 线段树
 class SegmentTree:
-    def __init__(self, arr, default = 0) -> None:
+    def __init__(self, arr, default = 0):
         if isinstance(arr, int):
-            n = arr
-            self._tree = [default] * (2 << (n - 1).bit_length())
-        else:
-            n = len(arr)
-            self._tree = [0] * (2 << (n - 1).bit_length())
-            self._build(arr, 1, 0, n - 1)
-        self._n = n
+            arr = [default] * arr
+        n = len(arr)
+        self._n: int = n
+        self._tree: List[int] = [0 for _ in range(2 << (n - 1).bit_length())]
+        self._build(arr, 1, 0, n - 1)
 
     def _merge_val(self, x: int, y: int) -> int:
         return max(x, y)  # **根据题目修改** 可维护 max(default = -inf), min(default = inf), gcd, +, &(-1), |, ^, ( * ) % MOD(1) 等
@@ -104,17 +102,11 @@ class LazySegmentTree:
 
     def __init__(self, arr, default = 0):
         if isinstance(arr, int):
-            n = arr
-            self._n = n
-            self._tree = [Node() for _ in range(2 << (n - 1).bit_length())]
-            for node in self._tree:
-                node.val = default
-                node.todo = self._TODO_INIT
-        else:
-            n = len(arr)
-            self._n = n
-            self._tree = [Node() for _ in range(2 << (n - 1).bit_length())]
-            self._build(arr, 1, 0, n - 1)
+            arr = [default] * arr
+        n = len(arr)
+        self._n = n
+        self._tree = [Node() for _ in range(2 << (n - 1).bit_length())]
+        self._build(arr, 1, 0, n - 1)
 
     # 合并两个 val
     def _merge_val(self, a: int, b: int) -> int:
