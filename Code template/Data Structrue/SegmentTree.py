@@ -104,11 +104,17 @@ class LazySegmentTree:
 
     def __init__(self, arr, default = 0):
         if isinstance(arr, int):
-            arr = [default] * arr
-        n = len(arr)
-        self._n = n
-        self._tree = [Node() for _ in range(2 << (n - 1).bit_length())]
-        self._build(arr, 1, 0, n - 1)
+            n = arr
+            self._n = n
+            self._tree = [Node() for _ in range(2 << (n - 1).bit_length())]
+            for node in self._tree:
+                node.val = default
+                node.todo = self._TODO_INIT
+        else:
+            n = len(arr)
+            self._n = n
+            self._tree = [Node() for _ in range(2 << (n - 1).bit_length())]
+            self._build(arr, 1, 0, n - 1)
 
     # 合并两个 val
     def _merge_val(self, a: int, b: int) -> int:
