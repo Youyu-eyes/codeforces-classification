@@ -84,11 +84,11 @@ int init = [] {
 }();
 
 // 离散化
-vector<int> discretize(vector<int>& arr) {
+vector<int> discretize(vector<int>& arr, int& m) {
     vector<int> sorted_unique = arr;
     sort(sorted_unique.begin(), sorted_unique.end());
     sorted_unique.erase(unique(sorted_unique.begin(), sorted_unique.end()), sorted_unique.end());
-    int m = sorted_unique.size();
+    m = sorted_unique.size();
     vector<int> discretized;
     for (int x : arr) {
         discretized.push_back(lower_bound(sorted_unique.begin(), sorted_unique.end(), x) - sorted_unique.begin());
@@ -96,6 +96,7 @@ vector<int> discretize(vector<int>& arr) {
     return discretized;
 }
 // 初始化
+// int m;
 // auto discretized_nums = discretize(nums, m);
 
 
