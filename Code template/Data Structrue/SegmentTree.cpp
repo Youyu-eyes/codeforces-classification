@@ -86,8 +86,8 @@ class SegmentTree {
     }
 
 public:
-    // 线段树维护一个长为 n 的数组（下标从 0 到 n-1），元素初始值为 init_val
-    SegmentTree(int n, T init_val) : SegmentTree(vector<T>(n, init_val)) {}
+    // 线段树维护一个长为 n (n > 0) 的数组（下标从 0 到 n-1），元素初始值为 init_val
+    SegmentTree(int n, T init_val) : n(n), tree(2 << bit_width((unsigned)n - 1), init_val) {}
 
     // 线段树维护数组 a
     SegmentTree(const vector<T>& a) : n(a.size()), tree(2 << bit_width(a.size() - 1)) {
@@ -253,7 +253,7 @@ class LazySegmentTree {
 
 public:
     // 线段树维护一个长为 n 的数组（下标从 0 到 n-1），元素初始值为 init_val
-    LazySegmentTree(int n, T init_val = 0) : LazySegmentTree(vector<T>(n, init_val)) {}
+    LazySegmentTree(int n, T init_val = {}) : n(n), tree(2 << bit_width((unsigned)(n - 1)), {init_val, F{}}) {}
 
     // 线段树维护数组 a
     LazySegmentTree(const vector<T>& a) : n(a.size()), tree(2 << bit_width(a.size() - 1)) {
@@ -304,8 +304,6 @@ int main() {
 
 
 // 动态开点线段树
-#include <bits/stdc++.h>
-using namespace std;
 
 // 线段树节点（定义在类外）
 struct SegNode {
@@ -645,7 +643,7 @@ public:
 };
 
 
-// ------- 静态李超线段树（整数版本） ------- //
+// ------- 静态李超线段树 ------- //
 const double eps = 1e-9;
 
 struct Line {
