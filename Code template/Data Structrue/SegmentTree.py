@@ -5,11 +5,13 @@ from typing import List, Tuple, Callable
 class SegmentTree:
     def __init__(self, arr, default = 0) -> None:
         if isinstance(arr, int):
-            arr = [default] * arr
-        n = len(arr)
-        self._n: int = n
-        self._tree: List[int] = [0 for _ in range(2 << (n - 1).bit_length())]
-        self._build(arr, 1, 0, n - 1)
+            n = arr
+            self._tree = [default] * (2 << (n - 1).bit_length())
+        else:
+            n = len(arr)
+            self._tree = [0] * (2 << (n - 1).bit_length())
+            self._build(arr, 1, 0, n - 1)
+        self._n = n
 
     def _merge_val(self, x: int, y: int) -> int:
         return max(x, y)  # **根据题目修改** 可维护 max(default = -inf), min(default = inf), gcd, +, &(-1), |, ^, ( * ) % MOD(1) 等
