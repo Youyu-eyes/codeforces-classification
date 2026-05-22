@@ -4,9 +4,7 @@ Codeforces 小白，记录刷题路线\
 整理codeforces的题目，用灵神的题单进行分类\
 整理 Py/C++ 代码模板，板子来自 leetcode 灵神的题单
 
-Go 语言模板及分类见 [algorithm_go](https://github.com/Youyu-eyes/algorithm_go) 仓库
-
----
+主仓库及简介见 [algorithm_go](https://github.com/Youyu-eyes/algorithm_go)
 
 ## 题单
 
