@@ -32,8 +32,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/bits"
 	"os"
+	"math/bits"
 	"slices"
 )
 
@@ -42,14 +42,64 @@ const (
 	inf = 0x3f3f3f3f
 )
 
-func solve(in *bufio.Reader, out *bufio.Writer) {
-	var n, m, d int
-	fmt.Fscan(in, &n, &m, &d)
+var (
+	in  *bufio.Reader
+	out *bufio.Writer
+)
+
+// n := II()
+func II() int {
+    n := 0
+    neg := false
+    b, _ := in.ReadByte()
+
+    for b < '0' || b > '9' {
+        if b == '-' {
+            neg = true
+            b, _ = in.ReadByte()
+            break
+        }
+        b, _ = in.ReadByte()
+    }
+
+    for b >= '0' && b <= '9' {
+        n = n*10 + int(b&15)
+        b, _ = in.ReadByte()
+    }
+    if neg {
+        n = -n
+    }
+    return n
+}
+
+// n := IF()
+func IF() (x float64) {
+	fmt.Fscan(in, &x)
+	return
+}
+
+// s := IS()
+func IS() (x string) {
+	fmt.Fscan(in, &x)
+	return
+}
+
+func Print(a ...any)            { fmt.Fprint(out, a...) }
+func Println(a ...any)          { fmt.Fprintln(out, a...) }
+func Printf(f string, a ...any) { fmt.Fprintf(out, f, a...) }
+
+
+func solve() {
+	n := II()
+	m := II()
+	d := II()
 
 	type Firework struct{ a, b, t int }
 	fw := make([]Firework, m)
 	for i := 0; i < m; i++ {
-		fmt.Fscan(in, &fw[i].a, &fw[i].b, &fw[i].t)
+		fw[i].a = II()
+		fw[i].b = II()
+		fw[i].t = II()
 	}
 
 	f := make([]int, n + 1)
@@ -60,7 +110,7 @@ func solve(in *bufio.Reader, out *bufio.Writer) {
 	for i := 1; i < m; i++ {
 		st := newSparseTable(f, func(a, b int) int { return max(a, b) })
 		dist := (fw[i].t - fw[i - 1].t) * d
-		nf := make([]int, n + 1)
+		nf := make([]int, n+1)
 		for p := 1; p <= n; p++ {
 			best := st.query(max(1, p - dist), min(n, p + dist) + 1)
 			nf[p] = best + fw[i].b - abs(fw[i].a - p)
@@ -68,24 +118,25 @@ func solve(in *bufio.Reader, out *bufio.Writer) {
 		copy(f, nf)
 	}
 
-	fmt.Fprintln(out, slices.Max(f[1:]))
+	Println(slices.Max(f[1:]))
 }
 
+
 func main() {
-	in := bufio.NewReader(os.Stdin)
-	out := bufio.NewWriter(os.Stdout)
+	in = bufio.NewReader(os.Stdin)
+	out = bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 
 	T := 1
-	for i := 0; i < T; i++ {
-		solve(in, out)
+
+	for t := 0; t < T; t++ {
+		solve()
 	}
 }
 
-func abs(x int) int {
-	if x >= 0 {
-		return x
-	}
+
+func abs[T int | int64 | float64](x T) T {
+	if x >= 0 { return x }
 	return -x
 }
 
@@ -124,7 +175,6 @@ func (st *SparseTable[T]) query(l, r int) T {
 	k := bits.Len(uint(r-l)) - 1
 	return st.op(st.st[k][l], st.st[k][r-1<<k])
 }
-// ------- 模板结束 ------- //
 
 
 // 方法二：单调队列优化
