@@ -19,19 +19,14 @@
 // 由更新操作可知：
 // 需要一个数据结构维护数字出现次数，定义为 cnt
 // 由于本题的 1 < a[i] < n，我们可以直接用 n 长度数组，否则用 哈希表 或 离散化 + 数组
+
+// 需要一个变量维护更新时，上一个块的最后一个数，定义为 cur
+
 // 需要一个数据结构维护块内的数字
 // 对于分块的题目，完整块至多有 n / B 个，实际上这个是非常大的，我们需要 O(1) 时间处理完整块，这也是分块的意义
-// 还需要一个变量维护更新时，上一个块的最后一个数，定义为 cur
+// 有两种方法
 
-// 1. 双端队列
-// 对于本题而言，左端点插入一个数，右端点删除一个数，可适用双端队列
-// 左端点，在 b.q 的 l - b.l 插入一个数，最多 O(B) 时间
-// 右端点，在 b.q 的 r - b.l 删除一个数，最多 O(B) 时间
-// 对于 cpp 来说，这是完全没问题的，deque 的 insert 函数和 erase 函数可以做到
-// 但是对于 Go，没有相关库函数，deque 也需要自己实现
-// 再写 insert 和 erase 不但带来额外开销，还非常麻烦
-
-// 2. 数组 + 指针
+// 1. 数组 + 指针
 // 我们考虑用 b.head 维护左端点
 // 完整块：左移 b.head，此时的 head 指向需要删除的数，用 tmp 保存，然后将 b.arr[b.head] 赋值为 cur，最后用 tmp 更新 cur
 // 左端点：你可以用循环数组的思想，用指针暴力进行删除和插入操作，但是时间复杂度还是 O(B)
@@ -52,6 +47,8 @@
 
 // 时间复杂度：O(q×sqrt(n))
 // 空间复杂度：O(n)
+
+// 总体来说，数组的写法还是比较麻烦的，双端队列的写法见 solve2，会更简单
 
 package main
 
@@ -328,4 +325,256 @@ func ReverseString(s string) string {
         b.WriteByte(s[i])
     }
     return b.String()
+}
+
+// 2. 双端队列
+// 对于本题而言，左端点插入一个数，右端点删除一个数，可适用双端队列
+// 完整的块，左端入队，右端出队，都是 O(1) 时间
+// 左端点，在 b.q 的 l - b.l 插入一个数，最多 O(B) 时间
+// 右端点，在 b.q 的 r - b.l 删除一个数，最多 O(B) 时间
+
+// 总体时间和空间复杂度与数组写法相同
+
+func solve2() {
+	n := II()
+	a := make([]int, n)
+	for i := range a { a[i] = II() }
+
+	B := 1000
+
+	type block struct {
+		l, r int // [l, r)
+		cnt  []int
+		q    deque[int]
+	}
+
+	blocks := make([]block, (n-1)/B+1)
+	calcBlock := func(l, r int) ([]int, deque[int]) {
+		cnt := make([]int, n + 1)
+		q := deque[int]{}
+		for j := l; j < r; j++ {
+			v := a[j]
+			cnt[v]++
+			q.pushBack(v)
+		}
+		return cnt, q
+	}
+	for i := 0; i < n; i += B {
+		r := min(i+B, n)
+		cnt, q := calcBlock(i, r)
+		blocks[i/B] = block{i, r, cnt, q}
+	}
+
+	// [l, r), 从 0 开始
+	sqrtUpdate := func(l, r int) {
+		last := &blocks[(r - 1) / B]
+		cur := last.q.get(r - 1 - last.l)
+
+		if l / B == (r - 1) / B {
+			last.q.erase(r - 1 - last.l)
+			last.q.insert(cur, l - last.l)
+			return
+		}
+
+		for i := range blocks {
+			b := &blocks[i]
+			if b.l >= r {
+				break
+			}
+			if b.r <= l {
+				continue
+			}
+			if l <= b.l && b.r <= r {
+				// 完整块
+				tmp := b.q.back()
+				b.q.popBack()
+				b.cnt[tmp]--
+				b.q.pushFront(cur)
+				b.cnt[cur]++
+				cur = tmp
+			} else if b.l < l {
+				tmp := b.q.back()
+				b.q.popBack()
+				b.cnt[tmp]--
+				b.q.insert(cur, l - b.l)
+				b.cnt[cur]++
+				cur = tmp
+			} else {
+				tmp := b.q.get(r - 1 - b.l)
+				b.q.erase(r - 1 - b.l)
+				b.cnt[tmp]--
+				b.q.pushFront(cur)
+				b.cnt[cur]++
+				return
+			}
+		}
+	}
+
+	// [l, r), 从 0 开始
+	sqrtQuery := func(l, r int, v int) (sum int) {
+		for i := range blocks {
+			b := &blocks[i]
+			if b.l >= r {
+				break
+			}
+			if b.r <= l {
+				continue
+			}
+			if l <= b.l && b.r <= r {
+				// 完整块
+				sum += b.cnt[v]
+			} else {
+				// 部分块
+				bl := max(b.l, l)
+				br := min(b.r, r)
+				for j := bl; j < br; j++ {
+					if b.q.get(j - b.l) == v {
+						sum++
+					}
+				}
+			}
+		}
+		return
+	}
+
+	lastans := 0
+	q := II()
+	for Q := 0; Q < q; Q++ {
+		queryNumber := II()
+		if queryNumber == 1 {
+			lPrime, rPrime := II(), II()
+
+			l := ((lPrime + lastans - 1) % n) + 1
+			r := ((rPrime + lastans - 1) % n) + 1
+
+			if l > r {
+				l, r = r, l
+			}
+
+			sqrtUpdate(l-1, r)
+		} else {
+			lPrime, rPrime, kPrime := II(), II(), II()
+
+			l := ((lPrime + lastans - 1) % n) + 1
+			r := ((rPrime + lastans - 1) % n) + 1
+			if l > r {
+				l, r = r, l
+			}
+			k := ((kPrime + lastans - 1) % n) + 1
+
+			ans := sqrtQuery(l-1, r, k)
+			Println(ans)
+
+			lastans = ans
+		}
+	}
+}
+
+type deque[T any] struct{ l, r []T }
+
+func (q deque[T]) empty() bool {
+	return len(q.l) == 0 && len(q.r) == 0
+}
+
+func (q deque[T]) size() int {
+	return len(q.l) + len(q.r)
+}
+
+func (q *deque[T]) pushFront(v T) {
+	q.l = append(q.l, v)
+}
+
+func (q *deque[T]) pushBack(v T) {
+	q.r = append(q.r, v)
+}
+
+func (q *deque[T]) popFront() (v T) {
+	if len(q.l) > 0 {
+		q.l, v = q.l[:len(q.l)-1], q.l[len(q.l)-1]
+	} else {
+		v, q.r = q.r[0], q.r[1:]
+	}
+	return
+}
+
+func (q *deque[T]) popBack() (v T) {
+	if len(q.r) > 0 {
+		q.r, v = q.r[:len(q.r)-1], q.r[len(q.r)-1]
+	} else {
+		v, q.l = q.l[0], q.l[1:]
+	}
+	return
+}
+
+func (q deque[T]) front() T {
+	if len(q.l) > 0 {
+		return q.l[len(q.l)-1]
+	}
+	return q.r[0]
+}
+
+func (q deque[T]) back() T {
+	if len(q.r) > 0 {
+		return q.r[len(q.r)-1]
+	}
+	return q.l[0]
+}
+
+// 0 <= i < q.size()
+func (q deque[T]) get(i int) T {
+	if i < len(q.l) {
+		return q.l[len(q.l)-1-i]
+	}
+	return q.r[i-len(q.l)]
+}
+
+// insert 在逻辑索引 idx 处插入 val (0 <= idx <= q.size())
+func (q *deque[T]) insert(val T, idx int) {
+	if idx == 0 {
+		q.pushFront(val)
+		return
+	}
+	if idx == q.size() {
+		q.pushBack(val)
+		return
+	}
+
+	if idx <= len(q.l) {
+		pos := len(q.l) - idx
+		var zero T
+		q.l = append(q.l, zero)
+		copy(q.l[pos+1:], q.l[pos:len(q.l)-1])
+		q.l[pos] = val
+	} else {
+		ridx := idx - len(q.l)
+		if ridx == 0 {
+			q.r = append([]T{val}, q.r...)
+		} else {
+			var zero T
+			q.r = append(q.r, zero)
+			copy(q.r[ridx+1:], q.r[ridx:len(q.r)-1])
+			q.r[ridx] = val
+		}
+	}
+}
+
+// erase 删除逻辑索引 idx 处的元素 (0 <= idx < q.size())
+func (q *deque[T]) erase(idx int) {
+	if idx < len(q.l) {
+		pos := len(q.l) - 1 - idx
+		if pos == len(q.l)-1 {
+			q.l = q.l[:len(q.l)-1]
+		} else {
+			copy(q.l[pos:], q.l[pos+1:])
+			q.l = q.l[:len(q.l)-1]
+		}
+	} else {
+		ridx := idx - len(q.l)
+		if ridx == 0 {
+			q.r = q.r[1:]
+		} else {
+			copy(q.r[ridx:], q.r[ridx+1:])
+			q.r = q.r[:len(q.r)-1]
+		}
+	}
 }
