@@ -131,7 +131,7 @@ func solve() {
 		return cmp.Compare(a.r, b.r)
 	})
 
-	l, r := B - 1, B
+	l, r := -1, 0
 	for _, b := range qs {		
 		// 偶数块，右端点右移
 		for ; r < b.r; r++ {
