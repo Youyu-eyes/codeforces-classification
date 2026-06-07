@@ -17,28 +17,9 @@
 
 package main
 
-import (
-	"bufio"
+import(
 	"fmt"
-	"os"
 )
-
-const (
-	MOD = 1_000_000_007
-	inf = 0x3f3f3f3f
-)
-
-var (
-	in  *bufio.Reader
-	out *bufio.Writer
-)
-
-func II() (x int) {
-	fmt.Fscan(in, &x)
-	return
-}
-
-func Println(a ...any) { fmt.Fprintln(out, a...) }
 
 type ValType struct {
 	maxLen int
@@ -208,15 +189,4 @@ func solve() {
 		fmt.Fprint(out, idx + 1)
 	}
 	fmt.Fprintln(out)
-}
-
-func main() {
-	in = bufio.NewReader(os.Stdin)
-	out = bufio.NewWriter(os.Stdout)
-	defer out.Flush()
-
-	T := 1
-	for t := 0; t < T; t++ {
-		solve()
-	}
 }
