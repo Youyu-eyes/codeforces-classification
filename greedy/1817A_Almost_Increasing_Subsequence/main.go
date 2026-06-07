@@ -1,24 +1,3 @@
-// https://codeforces.com/contest/1817/problem/A
-// 1500
-// 贪心 + 前缀和
-
-// 本题最重要的是想清楚贪心的思路
-// 将数组按照非递增分段
-// 例如 4 5 6 7 2 2 1 3 5
-// 得到 4 | 5 | 6 | 7 2 2 1 | 3 | 5
-// 分段后，如果一段的长度小于 3，则块内的数全部能选
-// 如果段长度 > 2，则这一段只能选两个，并且一定能选头尾两个数，具体证明见官解
-
-// 我们将能选的数标为 1，不能选的数标为 0，问题就变成了区间中 1 的个数
-// 值得注意到是，有两个例外：如果开头或者结尾的数是 0，但是实际上这两个数一定是可选的
-// 因此在计算前缀和的时候，要将最后一个数和第一个数排除
-// 这样会出现 l == r 时区间长度为负的情况，因此需要特判
-
-// 时间复杂度：O(n + q)
-// 空间复杂度：O(n)
-
-// 另有莫队解法，见数据结构题单
-
 package main
 
 import (
@@ -80,42 +59,6 @@ func Print(a ...any)            { fmt.Fprint(out, a...) }
 func Println(a ...any)          { fmt.Fprintln(out, a...) }
 func Printf(f string, a ...any) { fmt.Fprintf(out, f, a...) }
 
-
-func solve() {
-	n, q := II(), II()
-	a := make([]int, n)
-	for i := 0; i < n; i++ {
-		a[i] = II()
-	}
-
-	for i := 0; i < n; {
-		start := i
-		i++
-		for i < n && a[i - 1] >= a[i] {
-			i++
-		}
-		a[start], a[i - 1] = 0, 0
-		for j := start + 1; j < i - 1; j++ {
-			a[j] = 1
-		}
-	}
-
-	s := make([]int, n + 1)
-	for i, x := range a {
-		s[i + 1] = s[i] + x
-	}
-
-	for Q := 0; Q < q; Q++ {
-		l, r := II() - 1, II() - 1
-		if l == r {
-			Println(1)
-		} else {
-			Println(r - l + 1 - s[r] + s[l + 1])
-		}
-	}
-}
-
-
 func main() {
 	in = bufio.NewReader(os.Stdin)
 	out = bufio.NewWriter(os.Stdout)
@@ -127,7 +70,6 @@ func main() {
 		solve()
 	}
 }
-
 
 func abs[T int | int64 | float64](x T) T {
 	if x >= 0 { return x }
