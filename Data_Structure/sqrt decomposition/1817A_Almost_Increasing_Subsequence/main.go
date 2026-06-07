@@ -67,7 +67,7 @@ func main() {
 	T := 1
 
 	for t := 0; t < T; t++ {
-		solve()
+		solveMo()
 	}
 }
 
