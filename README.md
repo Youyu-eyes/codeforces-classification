@@ -2,7 +2,7 @@
 
 Codeforces 小白，记录刷题路线\
 整理codeforces的题目，用灵神的题单进行分类\
-整理 [Py/C++ 代码模板](https://github.com/Youyu-eyes/codeforces-classification/tree/main/Code%20template)，板子来自 leetcode 灵神的题单
+整理 [Py/C++ 代码模板](https://github.com/Youyu-eyes/codeforces-classification/tree/main/Code_template)，板子来自 leetcode 灵神的题单
 
 主仓库及简介见 [algorithm_go](https://github.com/Youyu-eyes/algorithm_go)
 
