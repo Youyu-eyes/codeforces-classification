@@ -11,11 +11,11 @@ Codeforces 小白，记录刷题路线\
 ## 题单
 
 1. [模拟](https://github.com/Youyu-eyes/codeforces-classification/tree/main/simulate)
-2. [滑动窗口 与 双指针](https://github.com/Youyu-eyes/codeforces-classification/tree/main/sliding%20window%20and%20two%20points)
-3. [二分](https://github.com/Youyu-eyes/codeforces-classification/tree/main/binary%20search)
-4. [数据结构](https://github.com/Youyu-eyes/codeforces-classification/tree/main/Data%20Structrue)
+2. [滑动窗口 与 双指针](https://github.com/Youyu-eyes/codeforces-classification/tree/main/sliding_window_and_two_points)
+3. [二分](https://github.com/Youyu-eyes/codeforces-classification/tree/main/binary_search)
+4. [数据结构](https://github.com/Youyu-eyes/codeforces-classification/tree/main/Data_Structure)
 5. [动态规划](https://github.com/Youyu-eyes/codeforces-classification/tree/main/DP)
 6. [贪心|思维|构造](https://github.com/Youyu-eyes/codeforces-classification/tree/main/greedy)
-7. [图论](https://github.com/Youyu-eyes/codeforces-classification/tree/main/graph%20theory)
+7. [图论](https://github.com/Youyu-eyes/codeforces-classification/tree/main/graph_theory)
 8. [数学](https://github.com/Youyu-eyes/codeforces-classification/tree/main/math)
-9. [位运算](https://github.com/Youyu-eyes/codeforces-classification/tree/main/bitwise%20operation)
+9. [位运算](https://github.com/Youyu-eyes/codeforces-classification/tree/main/bitwise_operation)
