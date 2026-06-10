@@ -5,7 +5,7 @@
 // leetcode 2209. 用地毯覆盖后的最少白色砖块
 // 数据升级版
 // 详见
-// 我的题解 
+// 我的题解 https://leetcode.cn/problems/minimum-white-tiles-after-covering-with-carpets/solutions/3981522/xiao-bai-si-lu-hua-fen-xing-dp-lian-xu-z-yezd/
 // WQS 二分笔记 https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-v/solutions/3981282/xiao-bai-si-lu-bi-ji-xi-lie-qian-xi-wqse-nhw1/
 
 package main
