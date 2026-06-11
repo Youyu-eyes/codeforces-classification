@@ -1,6 +1,6 @@
 // https://codeforces.com/problemset/problem/321/E
 // 2600
-// 分治优化 DP
+// 决策单调性优化 DP
 
 // 常规的划分型 DP，定义 f[k][i] 前 i 个数选 k 个数的最小代价
 // 假设上一段划分的左端点 j
