@@ -1,21 +1,21 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "math"
-    "strings"
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strings"
 )
 
 const (
-    MOD = 1_000_000_007
-    inf = 1 << 60
+	MOD = 1_000_000_007
+	inf = 1 << 60
 )
 
 var (
-    in  *bufio.Reader
-    out *bufio.Writer
+	in  *bufio.Reader
+	out *bufio.Writer
 )
 
 // n := II()
@@ -45,14 +45,14 @@ func II() int {
 
 // n := IF()
 func IF() (x float64) {
-    fmt.Fscan(in, &x)
-    return
+	fmt.Fscan(in, &x)
+	return
 }
 
 // s := IS()
 func IS() (x string) {
-    fmt.Fscan(in, &x)
-    return
+	fmt.Fscan(in, &x)
+	return
 }
 
 func Print(a ...any)            { fmt.Fprint(out, a...) }
@@ -60,44 +60,44 @@ func Println(a ...any)          { fmt.Fprintln(out, a...) }
 func Printf(f string, a ...any) { fmt.Fprintf(out, f, a...) }
 
 func main() {
-    in = bufio.NewReader(os.Stdin)
-    out = bufio.NewWriter(os.Stdout)
-    defer out.Flush()
+	in = bufio.NewReader(os.Stdin)
+	out = bufio.NewWriter(os.Stdout)
+	defer out.Flush()
 
-    T := 1
+	T := 1
 
-    for t := 0; t < T; t++ {
-        solve()
-    }
+	for t := 0; t < T; t++ {
+		solve()
+	}
 }
 
 func abs[T int | int64 | float64](x T) T {
-    if x >= 0 { return x }
-    return -x
+	if x >= 0 { return x }
+	return -x
 }
 
 func gcd(a, b int) int {
-    for b != 0 {
-        a, b = b, a%b
-    }
-    return a
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
 }
 
 // 数组要手动切片 sum(nums[:])
 func sum[T int | int64 | float64](nums []T) T {
-    var total T
-    for _, v := range nums {
-        total += v
-    }
-    return total
+	var total T
+	for _, v := range nums {
+		total += v
+	}
+	return total
 }
 
 func isqrt(x int) int {
-    rt := int(math.Sqrt(float64(x))) // 可能会算多一点点
-    if rt*rt > x {
-        rt--
-    }
-    return rt
+	rt := int(math.Sqrt(float64(x))) // 可能会算多一点点
+	if rt*rt > x {
+		rt--
+	}
+	return rt
 }
 
 func ReverseString(s string) string {
