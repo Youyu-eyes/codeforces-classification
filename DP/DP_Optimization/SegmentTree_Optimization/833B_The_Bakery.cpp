@@ -13,7 +13,7 @@
 
 // 代码实现的时候空间优化，同时内部循环优化
 // 时间复杂度 O((n - K) * K * logn)，其中 K 表示划分个数，n 为数组长度
-// 空间复杂度 O(nlogn)
+// 空间复杂度 O(n)
 
 #include <bits/stdc++.h>
 using namespace std;
