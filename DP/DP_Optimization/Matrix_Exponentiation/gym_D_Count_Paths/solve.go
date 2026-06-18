@@ -1,4 +1,4 @@
-// https://codeforces.com/gym/102644/problem/E
+// https://codeforces.com/gym/102644/problem/D
 // 矩阵快速幂优化 DP
 
 // DAG 有向无环图
