@@ -2,6 +2,9 @@
 // 3000
 // 单调栈分段 + 可持久化李超线段树 + 凸包优化
 
+// 见 leetcode 1959 我的题解
+// https://leetcode.cn/problems/minimum-total-space-wasted-with-k-resizing-operations/solutions/3985960/xiao-bai-si-lu-oknlogn-fu-za-zuo-fa-go-b-w523/
+
 package main
 
 type pair struct {
