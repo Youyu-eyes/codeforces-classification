@@ -1,3 +1,14 @@
+// https://codeforces.com/problemset/problem/453/A
+// 1600
+// 概率论，期望
+
+// 投掷一次，点数小于等于 k 的概率为 k / m
+// 投掷一次，点数恰好等于 k 的概率为 小于等于 k 的概率 - 小于等于 k - 1 的概率
+// k / m - (k - 1) / m
+// 枚举 k 为最大点数，则期望为
+
+// sum{k = [1, m]}(k / m - (k - 1) / m) ^ n
+
 package main
 import (
 	"math"
