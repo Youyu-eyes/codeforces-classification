@@ -1,0 +1,1 @@
+[2026 宁波大学校赛](https://codeforces.com/gym/695558)
