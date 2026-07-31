@@ -1,0 +1,1 @@
+[牛客·2025年浙江工商大学新生赛](https://ac.nowcoder.com/acm/contest/124451)
