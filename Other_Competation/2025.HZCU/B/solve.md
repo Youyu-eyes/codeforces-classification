@@ -36,7 +36,6 @@ $$
 
 # 性质证明
 假设点 $A = (x_A, y_A)$，$B = (x_B, y_B)$，$C = (x_C, y_C)$，且满足：
-
 $$
 x_A < x_B < x_C
 $$
@@ -64,49 +63,73 @@ $$
 
 已知点 $A(x_A, y_A)$、$C(x_C, y_C)$，以及目标点 $T(x_T, y_T)$，且满足 $x_A < x_C < x_T$。
 点 $B'$ 位于线段 $AC$ 上。根据线段的参数方程，必然存在一个实数 $\lambda \in (0, 1)$，使得：
-$$x_{B'} = \lambda x_A + (1 - \lambda) x_C$$
-$$y_{B'} = \lambda y_A + (1 - \lambda) y_C$$
+$$
+x_{B'} = \lambda x_A + (1 - \lambda) x_C \\
+y_{B'} = \lambda y_A + (1 - \lambda) y_C
+$$
 
 我们已知 $A$ 和 $C$ 到 $T$ 的斜率分别为：
-$$k_{AT} = \frac{y_T - y_A}{x_T - x_A} \implies y_T - y_A = k_{AT}(x_T - x_A)$$
-$$k_{CT} = \frac{y_T - y_C}{x_T - x_C} \implies y_T - y_C = k_{CT}(x_T - x_C)$$
+$$
+k_{AT} = \frac{y_T - y_A}{x_T - x_A} \implies y_T - y_A = k_{AT}(x_T - x_A) \\
+k_{CT} = \frac{y_T - y_C}{x_T - x_C} \implies y_T - y_C = k_{CT}(x_T - x_C)
+$$
 
 
 现在我们来计算 $B'$ 到 $T$ 的斜率 $k_{B'T}$：
-$$k_{B'T} = \frac{y_T - y_{B'}}{x_T - x_{B'}}$$
+$$
+k_{B'T} = \frac{y_T - y_{B'}}{x_T - x_{B'}}
+$$
 
-**1. 分解分子**
+**1. 分解分子** \
 将 $y_{B'}$ 的参数方程代入分子，把 $y_T$ 拆成 $\lambda y_T + (1 - \lambda) y_T$ ：
-$$y_T - y_{B'} = [\lambda y_T + (1 - \lambda) y_T] - [\lambda y_A + (1 - \lambda) y_C]$$
-$$y_T - y_{B'} = \lambda (y_T - y_A) + (1 - \lambda) (y_T - y_C)$$
+$$
+\begin{aligned}
+& y_T - y_{B'} = [\lambda y_T + (1 - \lambda) y_T] - [\lambda y_A + (1 - \lambda) y_C] \\
+& y_T - y_{B'} = \lambda (y_T - y_A) + (1 - \lambda) (y_T - y_C)
+\end{aligned}
+$$
 接着，把斜率等式代入：
-$$y_T - y_{B'} = \lambda \cdot k_{AT}(x_T - x_A) + (1 - \lambda) \cdot k_{CT}(x_T - x_C)$$
+$$
+y_T - y_{B'} = \lambda \cdot k_{AT}(x_T - x_A) + (1 - \lambda) \cdot k_{CT}(x_T - x_C)
+$$
 
-**2. 分解分母**
+**2. 分解分母** \
 同理，将 $x_{B'}$ 的参数方程代入分母（把 $x_T$ 拆成 $\lambda x_T + (1 - \lambda) x_T$）：
-$$x_T - x_{B'} = [\lambda x_T + (1 - \lambda) x_T] - [\lambda x_A + (1 - \lambda) x_C]$$
-$$x_T - x_{B'} = \lambda (x_T - x_A) + (1 - \lambda) (x_T - x_C)$$
+$$
+\begin{aligned}
+& x_T - x_{B'} = [\lambda x_T + (1 - \lambda) x_T] - [\lambda x_A + (1 - \lambda) x_C] \\
+& x_T - x_{B'} = \lambda (x_T - x_A) + (1 - \lambda) (x_T - x_C)
+\end{aligned}
+$$
 
-**3. 组合并证明加权平均**
+**3. 组合并证明加权平均** \
 将分解后的分子和分母放回 $k_{B'T}$ 的式子中：
-$$k_{B'T} = \frac{\lambda (x_T - x_A) \cdot k_{AT} + (1 - \lambda) (x_T - x_C) \cdot k_{CT}}{\lambda (x_T - x_A) + (1 - \lambda) (x_T - x_C)}$$
+$$
+k_{B'T} = \frac{\lambda (x_T - x_A) \cdot k_{AT} + (1 - \lambda) (x_T - x_C) \cdot k_{CT}}{\lambda (x_T - x_A) + (1 - \lambda) (x_T - x_C)}
+$$
 
 为了让式子更直观，我们令两个新的变量代表“权重”：
-$$w_1 = \lambda (x_T - x_A)$$
-$$w_2 = (1 - \lambda) (x_T - x_C)$$
+$$
+w_1 = \lambda (x_T - x_A) \\
+w_2 = (1 - \lambda) (x_T - x_C)
+$$
 
 因为 $x_A < x_C < x_T$ 且 $\lambda \in (0, 1)$，可以确保 $x_T - x_A > 0$ 且 $x_T - x_C > 0$，所以 **$w_1 > 0$ 且 $w_2 > 0$**。
 
 此时，式子化简为一个极其标准的形式：
-$$k_{B'T} = \frac{w_1 k_{AT} + w_2 k_{CT}}{w_1 + w_2}$$
+$$
+k_{B'T} = \frac{w_1 k_{AT} + w_2 k_{CT}}{w_1 + w_2}
+$$
 
 ### 结论
 这就证明了：**$k_{B'T}$ 是 $k_{AT}$ 和 $k_{CT}$ 的加权平均数（且权重均为正数）。**
 
 根据加权平均数的基本性质，加权平均结果必定介于两者之间。如果不失一般性地假设 $k_{AT} \ge k_{CT}$，那么：
-$$k_{B'T} \le \frac{w_1 k_{AT} + w_2 k_{AT}}{w_1 + w_2} = \frac{(w_1 + w_2) k_{AT}}{w_1 + w_2} = k_{AT}$$
+$$
+k_{B'T} \le \frac{w_1 k_{AT} + w_2 k_{AT}}{w_1 + w_2} = \frac{(w_1 + w_2) k_{AT}}{w_1 + w_2} = k_{AT}
+$$
 
-即 $k_{B'T} \le \max(k_{AT}, k_{CT})$。
+即 $k_{B'T} \le \max(k_{AT}, k_{CT})$。\
 这就从纯代数的角度严谨证明了：任何破坏下凸包性质的内凹点（如 $B'$），其构成的斜率绝对不可能提供比凸包顶点（如 $A$ 或 $C$）更优（更大）的解，因此可以直接从候选集合中剔除。
 
-更多模板请见 [我的github仓库](https://github.com/Youyu-eyes/algorithm_go)，感谢关注
+更多模板和题目请见 [我的github仓库](https://github.com/Youyu-eyes/algorithm_go)，感谢关注
