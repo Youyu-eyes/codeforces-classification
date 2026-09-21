@@ -38,24 +38,31 @@ func solve() {
 	var cur = make([]int, n)
 
 	var dfs func(int, int) int
-	dfs = func(u, flow int) int {
+	dfs = func(u, flow int) (pushed int) {
 		if u == t || flow == 0 {
 			return flow
 		}
-		for i := cur[u]; i < len(g[u]); i++ {
-			cur[u] = i
-			e := &g[u][i]
+
+		for ; cur[u] < len(g[u]); cur[u]++ {
+			e := &g[u][cur[u]]
 			v, wt, rev := e.to, e.wt, e.rev
 			if level[v] == level[u] + 1 && wt > 0 {
-				push := dfs(v, min(flow, wt))
+				push := dfs(v, min(flow - pushed, wt))
 				if push > 0 {
 					e.wt -= push
 					g[v][rev].wt += push
-					return push
+					pushed += push
+					
+					if pushed == flow {
+						break
+					}
 				}
 			}
 		}
-		return 0
+		if pushed == 0 {
+			level[u] = -1
+		}
+		return
 	}
 
 	maxFlow := 0
