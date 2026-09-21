@@ -43,9 +43,11 @@ func solve() {
 			return flow
 		}
 
-		for ; cur[u] < len(g[u]); cur[u]++ {
+		for cur[u] < len(g[u]) {
 			e := &g[u][cur[u]]
 			v, wt, rev := e.to, e.wt, e.rev
+			cur[u]++
+			
 			if level[v] == level[u] + 1 && wt > 0 {
 				push := dfs(v, min(flow - pushed, wt))
 				if push > 0 {
