@@ -1,6 +1,9 @@
 // https://www.lanqiao.cn/problems/21746/learning/?contest_id=304
 // 详细做法见栈部分的题解
 
+// 题解链接
+// https://github.com/Youyu-eyes/codeforces-classification/blob/main/Data_Structure/strak/lanqiao_26xspws_2_5/solution.md
+
 package main
 
 import (
