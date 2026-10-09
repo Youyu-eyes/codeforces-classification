@@ -42,7 +42,7 @@ package main
 func solve() {
 	n, m := II(), II()
 	power := make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		power[i] = II()
 	}
 
