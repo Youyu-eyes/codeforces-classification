@@ -20,25 +20,22 @@ func solve() {
 	f := make([]int, n + 1)
 	for i := range f { f[i] = inf }
 	f[0] = 0
-	nf := make([]int, n + 1)
-
-	PlcSegtree := NewPersistentLiChaoTree(1, n)
 
 	for K := 1; K <= k; K++ {
-		st := deque[pair]{}
-		PlcSegtree.clear()
-		clear(nf)
+		st := []pair{}
+		pLc := newPlc(1, n)
+		nf := make([]int, n + 1)
 		for i := range nf { nf[i] = inf }
 
 		lh := LowerHull{}
 		lh.add(vec{K - 1, f[K - 1]})
-		st.pushBack(pair{K - 1, lh})
+		st = append(st, pair{K - 1, lh})
 
 		b := lh.queryBinary(vec{-a[K - 1], 1})
-		PlcSegtree.insert(Line{float64(a[K - 1]), float64(b), K})
+		pLc = append(pLc, pLc[len(pLc)-1].insert(line{float64(a[K - 1]), float64(b), K}, 1, n))
 		
 		for i := K; i <= n - (k - K); i++ {
-			nf[i] = int(PlcSegtree.query(i))
+			nf[i] = int(pLc[len(pLc)-1].query(i))
 
 			if i == n {
 				continue
@@ -47,17 +44,17 @@ func solve() {
 			newlh := LowerHull{}
 			newlh.add(vec{i, f[i]})
 
-			for !st.empty() && a[st.back().idx] < a[i] {
-				PlcSegtree.rollBack()
-				oldlh := st.back().lh
-				st.popBack()
+			for len(st) > 0 && a[st[len(st)-1].idx] < a[i] {
+				pLc = pLc[:len(pLc)-1]
+				oldlh := st[len(st)-1].lh
+				st = st[:len(st)-1]
 				newlh = merge(oldlh, newlh)
 			}
-			st.pushBack(pair{i, newlh})
+			st = append(st, pair{i, newlh})
 
 			b := newlh.queryBinary(vec{-a[i], 1})
-			newLine := Line{float64(a[i]), float64(b), i}
-			PlcSegtree.insert(newLine)	
+			newLine := line{float64(a[i]), float64(b), i}
+			pLc = append(pLc, pLc[len(pLc)-1].insert(newLine, 1, n))	
 		}
 
 		copy(f, nf)

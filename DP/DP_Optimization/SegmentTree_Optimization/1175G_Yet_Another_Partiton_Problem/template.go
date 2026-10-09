@@ -4,149 +4,97 @@ import (
 	"math/big"
 )
 
-// ======= 可持久化李超线段树 模板开始 ======= //
-
-// ------- 可持久化李超线段树 (浮点数版) ------- //
-// 初始化：tree := NewPersistentLiChaoTree(minX, maxX)
-
-type Line struct {
+type line struct {
 	k, b float64
 	id   int
 }
 
-func newLineDefault() Line {
-	return Line{k: 0, b: inf, id: 0}
-	// 最大值：return Line{k: 0, b: -inf, id: 0}
+func newLine() line {
+	return line{k: 0, b: inf, id: 0}
+	// 最大值：return line{k: 0, b: -inf, id: 0}
 }
 
-func (l Line) calc(x int) float64 {
+func (l line) calc(x int) float64 {
 	return l.k*float64(x) + l.b
 }
 
-type PersistLiChaoNode struct {
-	lc, rc *PersistLiChaoNode
-	line   Line
+type pLcNode struct {
+	lo, ro *pLcNode
+	l, r   int
+	line   line
 }
 
-type PersistentLiChaoTree struct {
-	minX, maxX int
-	history    []*PersistLiChaoNode // 维护历史版本根节点
-}
-
-func NewPersistentLiChaoTree(minX, maxX int) *PersistentLiChaoTree {
-	return &PersistentLiChaoTree{
-		minX:    minX,
-		maxX:    maxX,
-		history: []*PersistLiChaoNode{nil}, // 初始第 0 个版本为空树 (nil)
-	}
-}
-
-func (st *PersistentLiChaoTree) better(a, b Line, x int) bool {
-	if a.id == 0 {
-		return false
-	}
-	if b.id == 0 {
-		return true
-	}
-	va, vb := a.calc(x), b.calc(x)
-	if va-vb < -eps {
-		return true
-	}
-	// 最大值：if va - vb > eps { return true }
-	if vb-va < -eps {
-		return false
-	}
-	// 最大值：if vb - va > eps { return false }
-	return a.id < b.id
-}
-
-func (st *PersistentLiChaoTree) insertNode(p *PersistLiChaoNode, l, r int, newLine Line) *PersistLiChaoNode {
-	// 可持久化核心：不修改原节点，而是创建一个新节点（拷贝旧节点的状态）
-	curr := &PersistLiChaoNode{}
-	if p != nil {
-		*curr = *p // 浅拷贝左右儿子指针和当前线段
-	} else {
-		curr.line = newLineDefault()
-	}
-
-	mid := (l + r) >> 1
-	leftBetter := st.better(newLine, curr.line, l)
-	midBetter := st.better(newLine, curr.line, mid)
-
-	if midBetter {
-		curr.line, newLine = newLine, curr.line // swap
-		midBetter = st.better(newLine, curr.line, mid)
-		leftBetter = st.better(newLine, curr.line, l)
-	}
-
+func buildPlc(l, r int) *pLcNode {
+	o := &pLcNode{l: l, r: r, line: newLine()}
 	if l == r {
-		return curr
+		return o
 	}
-
-	// 下放处于劣势的线段到对应的子树，并更新新节点的子节点指针
-	if leftBetter != midBetter {
-		curr.lc = st.insertNode(curr.lc, l, mid, newLine)
-	} else {
-		curr.rc = st.insertNode(curr.rc, mid+1, r, newLine)
-	}
-
-	return curr
+	m := (l + r) >> 1
+	o.lo = buildPlc(l, m)
+	o.ro = buildPlc(m+1, r)
+	return o
 }
 
-func (st *PersistentLiChaoTree) queryNode(p *PersistLiChaoNode, l, r, x int) float64 {
-	if p == nil {
-		return inf
-		// 最大值：return -inf
-	}
-	res := float64(inf)
-	// 最大值：res := float64(-inf)
-	if p.line.id != 0 {
-		res = p.line.calc(x)
+func (o pLcNode) updateLine(nl line) *pLcNode {
+	l, r := o.l, o.r
+	m := (l + r) >> 1
+
+	if nl.calc(m) < o.line.calc(m)-eps { // 最大值：if nl.calc(m) > o.line.calc(m)+eps
+		o.line, nl = nl, o.line
 	}
 	if l == r {
+		return &o
+	}
+
+	if nl.calc(l) < o.line.calc(l)-eps { // 最大值：if nl.calc(l) > o.line.calc(l)+eps
+		o.lo = o.lo.updateLine(nl)
+	} else if nl.calc(r) < o.line.calc(r)-eps { // 最大值：if nl.calc(r) > o.line.calc(r)+eps
+		o.ro = o.ro.updateLine(nl)
+	}
+	return &o
+}
+
+// 插入线段 [ql, qr] 上的直线 nl
+func (o pLcNode) insert(nl line, ql, qr int) *pLcNode {
+	if ql > o.r || qr < o.l {
+		return &o
+	}
+	if ql <= o.l && o.r <= qr {
+		return o.updateLine(nl)
+	}
+	m := (o.l + o.r) >> 1
+	if ql <= m {
+		o.lo = o.lo.insert(nl, ql, qr)
+	}
+	if m < qr {
+		o.ro = o.ro.insert(nl, ql, qr)
+	}
+	return &o
+}
+
+// 查询 x 处的最值
+func (o *pLcNode) query(x int) (res float64) {
+	if o == nil {
+		return inf // 最大值：return -inf
+	}
+	res = inf // 最大值：res := -inf
+	
+	if o.line.id != 0 {
+		res = o.line.calc(x)
+	}
+	if o.l == o.r {
 		return res
 	}
-	mid := (l + r) >> 1
-	if x <= mid {
-		return min(res, st.queryNode(p.lc, l, mid, x))
+	m := (o.l + o.r) >> 1
+	if x <= m {
+		return min(res, o.lo.query(x)) // 最大值：return max(res, o.lo.query(x))
 	}
-	return min(res, st.queryNode(p.rc, mid+1, r, x))
-	// 最大值：return max(res, ...)
+	return min(res, o.ro.query(x)) // 最大值：return max(res, o.ro.query(x))
 }
 
-// ----- 外部接口 ----- //
-
-// insert 插入一条全局直线，生成一个新版本
-// 时空复杂度：O(log C)
-func (st *PersistentLiChaoTree) insert(line Line) {
-	root := st.history[len(st.history)-1]
-	newRoot := st.insertNode(root, st.minX, st.maxX, line)
-	st.history = append(st.history, newRoot)
+func newPlc(l, r int) []*pLcNode {
+	return []*pLcNode{buildPlc(l, r)}
 }
-
-// query 查询点 x 的最值（在最新版本上查询）
-// 时间复杂度：O(log C)
-func (st *PersistentLiChaoTree) query(x int) float64 {
-	root := st.history[len(st.history)-1]
-	return st.queryNode(root, st.minX, st.maxX, x)
-}
-
-// rollBack 返回上一个版本（撤销最后一次插入的直线）
-// 时间复杂度：O(1)
-func (st *PersistentLiChaoTree) rollBack() {
-	if len(st.history) > 1 {
-		st.history = st.history[:len(st.history)-1]
-	}
-}
-
-func (st *PersistentLiChaoTree) clear() {
-	st.history = []*PersistLiChaoNode{nil}
-}
-
-
-// ======= 可持久化李超线段树 模板结束 ======= //
-
-// ======= 凸包 模板开始 ======= //
 
 // --- 向量模板 --- //
 // 初始化：v := vec{x, y}
@@ -315,5 +263,3 @@ func merge(lh1, lh2 LowerHull) LowerHull {
 		return lh1
 	}
 }
-
-// ======= 凸包 模板结束 ======= //
