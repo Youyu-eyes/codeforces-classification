@@ -1,4 +1,5 @@
 // https://codeforces.com/contest/617/problem/E
+// 同 https://www.luogu.com.cn/problem/P4462
 // 2200
 // 莫队 + 前缀和 + 枚举右维护左
 
