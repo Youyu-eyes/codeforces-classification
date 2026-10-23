@@ -2,7 +2,6 @@ import sys
 from collections import deque
 
 def solve():
-    # 使用 sys.stdin.read 实现快速 I/O
     input_data = sys.stdin.read().split()
     if not input_data:
         return

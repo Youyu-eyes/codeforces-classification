@@ -48,9 +48,9 @@ for i in range(1):
 
     total_less = 0
     for k in range(K + 1):
-        total_less = (total_less + f_0[k][n - 1]) % MOD          # 以 '0' 结尾
+        total_less = (total_less + f_0[k][n - 1]) % MOD
         f1_last = (s_1[k][n] - s_1[k][n - 1]) % MOD
-        total_less = (total_less + f1_last) % MOD              # 以 '1' 结尾
+        total_less = (total_less + f1_last) % MOD
 
     ans = (pow(2, n, MOD) - total_less) % MOD
     print(ans)
