@@ -3,37 +3,6 @@
 # 时间复杂度 O(n^2)，python 能过
 # 倒序枚举 j 能让 k 递增，递减也可，但是不如递增好写
 
-# from math import inf
-# from math import gcd
-# from math import lcm
-# from math import sin
-# from math import pi
-
-# from heapq import heapify
-# from heapq import heappush
-# from heapq import heappop
-# from heapq import heapreplace
-# from heapq import nsmallest
-# from heapq import nlargest
-
-# from functools import cache
-
-# from itertools import accumulate
-# from itertools import zip_longest
-# from itertools import pairwise
-
-# from bisect import bisect_left
-
-# from collections import defaultdict
-# from collections import Counter
-# from collections import deque
-
-# import datetime
-# import re
-# from typing import List, Tuple
-
-# MOD = 1_000_000_007
-
 import sys
 input = lambda: sys.stdin.readline().rstrip('\r\n')
 print = lambda *args, end='\n', sep=' ': sys.stdout.write(
