@@ -8,6 +8,8 @@ Codeforces 小白，记录刷题路线\
 
 题单按题号分类，每个文件开头包含题号和难度分，如果有多个算法可以解决会有不同难度分
 
+> 文件/文件夹未表明题目出处的，来自 codeforces
+
 ## 题单
 
 1. [模拟](https://github.com/Youyu-eyes/codeforces-classification/tree/main/simulate)
