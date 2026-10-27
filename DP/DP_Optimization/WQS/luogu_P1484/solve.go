@@ -1,5 +1,5 @@
 // https://www.luogu.com.cn/problem/P1484
-// 洛谷绿 - 提高
+// 洛谷青 - 提高
 // 另有反悔贪心做法
 
 // WQS 二分做法
