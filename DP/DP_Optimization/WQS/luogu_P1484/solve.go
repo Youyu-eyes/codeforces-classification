@@ -40,12 +40,11 @@ func solve() {
 		f0 := pair{0, 0}
 		f1 := pair{0, 0}
 		for _, x := range nums {
-			cand1 := f1
-			cand1.b += x - k
+			f1.b += x - k
+			f1.x++
 			f := f0
-			if less(f0, cand1) {
-				f = cand1
-				f.x++
+			if less(f0, f1) {
+				f = f1
 			}
 			f0, f1 = f, f0
 		}
