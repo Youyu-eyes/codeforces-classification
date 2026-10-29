@@ -35,7 +35,7 @@ func solve() {
 	k := II()
 	nums := make([]int, n)
 	f := make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		nums[i] = II()
 		f[i] = 1
 	}
@@ -43,7 +43,7 @@ func solve() {
 	for K := 1; K <= k; K++ {
 		segtree := NewSegmentTreeBySize(n, 0)
 		nf := make([]int, n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			nf[i] = segtree.query(0, nums[i] - 1)
 			if i >= K - 1{
 				segtree.update(nums[i], f[i])
