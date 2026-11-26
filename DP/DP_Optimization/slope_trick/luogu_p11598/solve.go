@@ -2,7 +2,6 @@
 // 洛谷紫 - 省选/NOI-
 
 // slope trick
-// 
 
 package main
 
